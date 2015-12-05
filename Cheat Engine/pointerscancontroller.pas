@@ -1865,7 +1865,7 @@ begin
                   if unalligned then
                     currentaddress:=ValueFinder.FindValue(currentaddress+1)
                   else
-                    currentaddress:=ValueFinder.FindValue(currentaddress+pointersize);
+                    currentaddress:=ValueFinder.FindValue(currentaddress+4);
 
                   addedToQueue:=true;
                 end;
