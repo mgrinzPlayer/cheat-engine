@@ -1228,7 +1228,7 @@ var
   v: integer;
   r: PtrUInt;
 begin
-  result:=0;
+  result:=1;
   try
     parameters:=lua_gettop(L);
     if parameters=1 then
@@ -1251,14 +1251,15 @@ begin
       if ReadProcessMemory(processhandle, pointer(address), @v, sizeof(v), r) then
       begin
         lua_pushinteger(L, dword(v));
-        result:=1;
+        exit;      
       end;
 
     end;
   except
-    result:=0;
-    lua_pop(L, lua_gettop(L));
   end;
+
+  lua_pop(L, lua_gettop(L));
+  lua_pushnil(L);
 end;
 
 function readIntegerLocal(L: PLua_State): integer; cdecl;
@@ -1279,7 +1280,7 @@ var
   v: Qword;
   r: PtrUInt;
 begin
-  result:=0;
+  result:=1;
   try
     parameters:=lua_gettop(L);
     if parameters=1 then
@@ -1302,14 +1303,15 @@ begin
       if ReadProcessMemory(processhandle, pointer(address), @v, sizeof(v), r) then
       begin
         lua_pushinteger(L, v);
-        result:=1;
+        exit;      
       end;
 
     end;
   except
-    result:=0;
-    lua_pop(L, lua_gettop(L));
   end;
+
+  lua_pop(L, lua_gettop(L));
+  lua_pushnil(L);
 end;
 
 function readQwordLocal(L: PLua_State): integer; cdecl;
@@ -1347,7 +1349,7 @@ var
   v: single;
   r: PtrUInt;
 begin
-  result:=0;
+  result:=1;
   try
     parameters:=lua_gettop(L);
     if parameters=1 then
@@ -1368,14 +1370,15 @@ begin
       if ReadProcessMemory(processhandle, pointer(address), @v, sizeof(v), r) then
       begin
         lua_pushnumber(L, v);
-        result:=1;
+        exit;
       end;
 
     end;
   except
-    result:=0;
-    lua_pop(L, lua_gettop(L));
   end;
+
+  lua_pop(L, lua_gettop(L));
+  lua_pushnil(L);
 end;
 
 function readFloatLocal(L: PLua_State): integer; cdecl;
@@ -1396,7 +1399,7 @@ var
   v: double;
   r: PtrUInt;
 begin
-  result:=0;
+  result:=1;
   try
     parameters:=lua_gettop(L);
     if parameters=1 then
@@ -1417,14 +1420,15 @@ begin
       if ReadProcessMemory(processhandle, pointer(address), @v, sizeof(v), r) then
       begin
         lua_pushnumber(L, v);
-        result:=1;
+        exit;
       end;
 
     end;
   except
-    result:=0;
-    lua_pop(L, lua_gettop(L));
   end;
+
+  lua_pop(L, lua_gettop(L));
+  lua_pushnil(L);
 end;
 
 function readDoubleLocal(L: PLua_State): integer; cdecl;
@@ -1450,7 +1454,7 @@ var
 
   usewidechar: boolean;
 begin
-  result:=0;
+  result:=1;
   try
     parameters:=lua_gettop(L);
     if parameters>=1 then
@@ -1500,11 +1504,14 @@ begin
         freemem(v);
       end;
 
+      if r>0 then exit;
+
     end;
   except
-    result:=0;
-    lua_pop(L, lua_gettop(L));
   end;
+
+  lua_pop(L, lua_gettop(L));
+  lua_pushnil(L);
 end;
 
 function readStringLocal(L: PLua_State): integer; cdecl;
@@ -1525,7 +1532,7 @@ var
   v: integer;
   r: PtrUInt;
 begin
-  result:=0;
+  result:=1;
   try
     parameters:=lua_gettop(L);
     if parameters=2 then
@@ -1544,12 +1551,13 @@ begin
 
       lua_pop(L, parameters);
       lua_pushboolean(L, WriteProcessMemory(processhandle, pointer(address), @v, sizeof(v), r));
-      result:=1;
+      exit;
     end;
   except
-    result:=0;
-    lua_pop(L, lua_gettop(L));
   end;
+
+  lua_pop(L, lua_gettop(L));
+  lua_pushboolean(L, false);
 end;
 
 function writeIntegerLocal(L: PLua_State): integer; cdecl;
@@ -1570,7 +1578,7 @@ var
   v: Qword;
   r: PtrUInt;
 begin
-  result:=0;
+  result:=1;
   try
     parameters:=lua_gettop(L);
     if parameters=2 then
@@ -1589,12 +1597,13 @@ begin
 
       lua_pop(L, parameters);
       lua_pushboolean(L, WriteProcessMemory(processhandle, pointer(address), @v, sizeof(v), r));
-      result:=1;
+      exit;
     end;
   except
-    result:=0;
-    lua_pop(L, lua_gettop(L));
   end;
+
+  lua_pop(L, lua_gettop(L));
+  lua_pushboolean(L, false);
 end;
 
 function writeQwordLocal(L: PLua_State): integer; cdecl;
@@ -1632,7 +1641,7 @@ var
   v: single;
   r: PtrUInt;
 begin
-  result:=0;
+  result:=1;
   try
     parameters:=lua_gettop(L);
     if parameters=2 then
@@ -1653,12 +1662,13 @@ begin
 
 
       lua_pushboolean(L, WriteProcessMemory(processhandle, pointer(address), @v, sizeof(v), r));
-      result:=1;
+      exit;
     end;
   except
-    result:=0;
-    lua_pop(L, lua_gettop(L));
   end;
+
+  lua_pop(L, lua_gettop(L));
+  lua_pushboolean(L, false);
 end;
 
 function writeFloatLocal(L: PLua_State): integer; cdecl;
@@ -1680,7 +1690,7 @@ var
   v: double;
   r: PtrUInt;
 begin
-  result:=0;
+  result:=1;
   try
     parameters:=lua_gettop(L);
     if parameters=2 then
@@ -1700,12 +1710,13 @@ begin
       lua_pop(L, parameters);
 
       lua_pushboolean(L, WriteProcessMemory(processhandle, pointer(address), @v, sizeof(v), r));
-      result:=1;
+      exit;
     end;
   except
-    result:=0;
-    lua_pop(L, lua_gettop(L));
   end;
+
+  lua_pop(L, lua_gettop(L));
+  lua_pushboolean(L, false);
 end;
 
 function writeDoubleLocal(L: PLua_State): integer; cdecl;
@@ -1729,7 +1740,7 @@ var
   w: widestring;
   r: PtrUInt;
 begin
-  result:=0;
+  result:=1;
   try
     parameters:=lua_gettop(L);
     if parameters>=2 then
@@ -1762,12 +1773,13 @@ begin
       else
         lua_pushboolean(L, WriteProcessMemory(processhandle, pointer(address), v, length(v), r));
 
-      result:=1;
+      exit;
     end;
   except
-    result:=0;
-    lua_pop(L, lua_gettop(L));
   end;
+
+  lua_pop(L, lua_gettop(L));
+  lua_pushboolean(L, false);
 end;
 
 function writeStringLocal(L: PLua_State): integer; cdecl;
@@ -1790,56 +1802,64 @@ var parameters: integer;
   tableversion: boolean;
 begin
   tableversion:=false;
-  result:=0;
-  parameters:=lua_gettop(L);
+  result:=1;
 
-  if lua_isstring(L, -parameters) then
-  begin
-    if processhandle=GetCurrentProcess then
-      addresstoread:=selfsymhandler.getAddressFromNameL(lua_tostring(L,-parameters))
-    else
-      addresstoread:=symhandler.getAddressFromNameL(lua_tostring(L,-parameters));
-  end
-  else
-    addresstoread:=lua_tointeger(L,-parameters);
-
-  if parameters>1 then
-  begin
-    bytestoread:=lua_tointeger(L,-parameters+1);
-
-    if parameters>2 then
-      tableversion:=lua_toboolean(L, -parameters+2);
-
-  end
-  else
-    bytestoread:=1;
-
-  lua_pop(L, parameters);
-
-  setlength(bytes,bytestoread);
-  ZeroMemory(@bytes[0], bytestoread);
-  if ReadProcessMemory(processhandle, pointer(addresstoread), @bytes[0], bytestoread, x) then
-  begin
-    if tableversion then
+  try
+    parameters:=lua_gettop(L);
+    if parameters>0 then
     begin
-      lua_newtable(L);
-      for i:=0 to x-1 do
+      if lua_isstring(L, -parameters) then
       begin
-        lua_pushinteger(L, i+1);
-        lua_pushinteger(L, bytes[i]);
-        lua_settable(L, -3);
+        if processhandle=GetCurrentProcess then
+          addresstoread:=selfsymhandler.getAddressFromNameL(lua_tostring(L,-parameters))
+        else
+          addresstoread:=symhandler.getAddressFromNameL(lua_tostring(L,-parameters));
+      end
+      else
+        addresstoread:=lua_tointeger(L,-parameters);
+
+      if parameters>1 then
+      begin
+        bytestoread:=lua_tointeger(L,-parameters+1);
+
+        if parameters>2 then
+          tableversion:=lua_toboolean(L, -parameters+2);
+
+      end
+      else
+        bytestoread:=1;
+
+      lua_pop(L, parameters);
+
+      setlength(bytes,bytestoread);
+      ZeroMemory(@bytes[0], bytestoread);
+      if ReadProcessMemory(processhandle, pointer(addresstoread), @bytes[0], bytestoread, x) then
+      begin
+        if tableversion then
+        begin
+          lua_newtable(L);
+          for i:=0 to x-1 do
+          begin
+            lua_pushinteger(L, i+1);
+            lua_pushinteger(L, bytes[i]);
+            lua_settable(L, -3);
+          end;
+          result:=1;
+        end
+        else
+        begin
+          for i:=0 to x-1 do
+            lua_pushinteger(L,bytes[i]);
+          result:=x;
+        end;
+        exit;
       end;
-      result:=1;
-    end
-    else
-    begin
-      for i:=0 to x-1 do
-        lua_pushinteger(L,bytes[i]);
-      result:=x;
     end;
+  except
   end;
 
-
+  lua_pop(L, lua_gettop(L));
+  lua_pushnil(L);
 end;
 
 
@@ -1854,69 +1874,74 @@ var
   oldprotect: dword;
   b: byte;
 begin
-  parameters:=lua_gettop(L);
-  if parameters=0 then exit;
-
-
-
-  if lua_isstring(L, -parameters) then
-  begin
-    if processhandle=GetCurrentProcess then
-      address:=selfsymhandler.getAddressFromNameL(lua_tostring(L,-parameters))
-    else
-      address:=symhandler.getAddressFromNameL(lua_tostring(L,-parameters))
-  end
-  else
-    address:=lua_tointeger(L,-parameters);
-
-  bytecount:=0;
-  if lua_istable(L, 2) then
-  begin
-    parameters2:=lua_objlen(L, 2);
-    setlength(bytes, parameters2);
-
-
-
-    for i:=1 to parameters2 do
+  result:=1;
+  try
+    parameters:=lua_gettop(L);
+    if parameters>0 then
     begin
-      lua_pushinteger(L,i);
-      lua_gettable(L, 2);
-
-      if lua_isnumber(L,-1) then
+      if lua_isstring(L, -parameters) then
       begin
-        j:=lua_tointeger(L,-1);
-        bytes[bytecount]:=j;
-        inc(bytecount);
+        if processhandle=GetCurrentProcess then
+          address:=selfsymhandler.getAddressFromNameL(lua_tostring(L,-parameters))
+        else
+          address:=symhandler.getAddressFromNameL(lua_tostring(L,-parameters))
+      end
+      else
+        address:=lua_tointeger(L,-parameters);
+
+      bytecount:=0;
+      if lua_istable(L, 2) then
+      begin
+        parameters2:=lua_objlen(L, 2);
+        setlength(bytes, parameters2);
+
+
+
+        for i:=1 to parameters2 do
+        begin
+          lua_pushinteger(L,i);
+          lua_gettable(L, 2);
+
+          if lua_isnumber(L,-1) then
+          begin
+            j:=lua_tointeger(L,-1);
+            bytes[bytecount]:=j;
+            inc(bytecount);
+          end;
+          lua_pop(L,1);
+        end;
+
+
+      end
+      else
+      begin
+        setlength(bytes,parameters-1);
+
+        bytecount:=0;
+        for i:=(-parameters)+1 to -1 do
+        begin
+          b:=lua_tointeger(L,i);
+          bytes[bytecount]:=b;
+          inc(bytecount);
+        end;
+
       end;
-      lua_pop(L,1);
+
+      x:=0;
+      VirtualProtectEx(processhandle, pointer(address), bytecount, PAGE_EXECUTE_READWRITE, oldprotect);
+      WriteProcessMemory(processhandle, pointer(address), @bytes[0], bytecount, x);
+      VirtualProtectEx(processhandle, pointer(address), bytecount, oldprotect, oldprotect);
+
+
+      lua_pop(L, parameters);
+      lua_pushinteger(L, x);    //return the number of bytes written
+      exit;
     end;
-
-
-  end
-  else
-  begin
-    setlength(bytes,parameters-1);
-
-    bytecount:=0;
-    for i:=(-parameters)+1 to -1 do
-    begin
-      b:=lua_tointeger(L,i);
-      bytes[bytecount]:=b;
-      inc(bytecount);
-    end;
-
+  except
   end;
 
-  x:=0;
-  VirtualProtectEx(processhandle, pointer(address), bytecount, PAGE_EXECUTE_READWRITE, oldprotect);
-  WriteProcessMemory(processhandle, pointer(address), @bytes[0], bytecount, x);
-  VirtualProtectEx(processhandle, pointer(address), bytecount, oldprotect, oldprotect);
-
-
-  lua_pop(L, parameters);
-  lua_pushinteger(L, x);    //return the number of bytes written
-
-  result:=1;  //return 1 value
+  lua_pop(L, lua_gettop(L));
+  lua_pushinteger(L, 0);    //none bytes written
 end;
 
 function writeBytes(L: PLua_state): integer; cdecl;
