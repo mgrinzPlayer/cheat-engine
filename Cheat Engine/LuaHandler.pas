@@ -5520,7 +5520,7 @@ begin
 end;
 
 
-function lua_registerAutoAssemblerPrologue(L: PLua_State): integer; cdecl;
+function lua_registerAutoAssemblerPrologueEx(L: PLua_State; PostAOBSCAN: boolean=false): integer; cdecl;
 var
   f: integer;
   routine: string;
@@ -5547,16 +5547,36 @@ begin
     end
     else exit;
 
-    lua_pushinteger(L, registerAutoAssemblerPrologue(lc.AutoAssemblerPrologueEvent));
+    lua_pushinteger(L, registerAutoAssemblerPrologue(lc.AutoAssemblerPrologueEvent,PostAOBSCAN));
     result:=1;
   end;
 end;
 
-function lua_unregisterAutoAssemblerPrologue(L: PLua_State): integer; cdecl;
+function lua_unregisterAutoAssemblerPrologueEx(L: PLua_State; PostAOBSCAN: boolean=false): integer; cdecl;
 begin
   result:=0;
   if lua_gettop(L)>0 then
-    unregisterAutoAssemblerPrologue(lua_tointeger(L, 1));
+    unregisterAutoAssemblerPrologue(lua_tointeger(L, 1),PostAOBSCAN);
+end;
+
+function lua_registerAutoAssemblerPrologue(L: PLua_State): integer; cdecl;
+begin
+  result:=lua_registerAutoAssemblerPrologueEx(L, false);
+end;
+
+function lua_unregisterAutoAssemblerPrologue(L: PLua_State): integer; cdecl;
+begin
+  result:=lua_unregisterAutoAssemblerPrologueEx(L, false);
+end;
+
+function lua_registerAutoAssemblerProloguePostAOBSCAN(L: PLua_State): integer; cdecl;
+begin
+  result:=lua_registerAutoAssemblerPrologueEx(L, true);
+end;
+
+function lua_unregisterAutoAssemblerProloguePostAOBSCAN(L: PLua_State): integer; cdecl;
+begin
+  result:=lua_unregisterAutoAssemblerPrologueEx(L, true);
 end;
 
 function lua_shortCutToText(L: PLua_State): integer; cdecl;
@@ -6849,6 +6869,8 @@ begin
 
     lua_register(LuaVM, 'registerAutoAssemblerPrologue', lua_registerAutoAssemblerPrologue);
     lua_register(LuaVM, 'unregisterAutoAssemblerPrologue', lua_unregisterAutoAssemblerPrologue);
+    lua_register(LuaVM, 'registerAutoAssemblerProloguePostAOBSCAN', lua_registerAutoAssemblerProloguePostAOBSCAN);
+    lua_register(LuaVM, 'unregisterAutoAssemblerProloguePostAOBSCAN', lua_unregisterAutoAssemblerProloguePostAOBSCAN);
 
 
     lua_register(LuaVM, 'shortCutToText', lua_shortCutToText);
