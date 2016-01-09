@@ -28,7 +28,7 @@ var
 begin
   pen:=luaclass_getClassObject(L);
   if lua_gettop(L)>=1 then
-    pen.color:=lua_tointeger(L, -1);
+    pen.color:=lua_tointeger_alt(L, -1);
   result:=1;
 end;
 
@@ -47,7 +47,7 @@ var
 begin
   pen:=luaclass_getClassObject(L);
   if lua_gettop(L)>=1 then
-    pen.Width:=lua_tointeger(L, -1);
+    pen.Width:=lua_tointeger_alt(L, -1);
   result:=1;
 end;
 

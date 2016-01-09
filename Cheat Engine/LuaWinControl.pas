@@ -68,8 +68,8 @@ begin
 
   if lua_gettop(L)>=3 then
   begin
-    x:=lua_tointeger(L,-2);
-    y:=lua_tointeger(L,-1);
+    x:=lua_tointeger_alt(L,-2);
+    y:=lua_tointeger_alt(L,-1);
 
     luaclass_newClass(L, wincontrol.ControlAtPos(point(x,y),[capfOnlyClientAreas, capfAllowWinControls, capfRecursive]));
     result:=1;

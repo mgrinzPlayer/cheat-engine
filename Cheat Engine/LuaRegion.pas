@@ -29,10 +29,10 @@ begin
 
   if lua_gettop(L)>=4 then
   begin
-    x1:=lua_tointeger(L, -4);
-    y1:=lua_tointeger(L, -3);
-    x2:=lua_tointeger(L, -2);
-    y2:=lua_tointeger(L, -1);
+    x1:=lua_tointeger_alt(L, -4);
+    y1:=lua_tointeger_alt(L, -3);
+    x2:=lua_tointeger_alt(L, -2);
+    y2:=lua_tointeger_alt(L, -1);
     r.AddRectangle(x1,y1,x2,y2);
   end;
 end;
@@ -89,14 +89,14 @@ begin
           //get x
           lua_pushinteger(l, 1);
           lua_gettable(L, coordinateTable);
-          x:=lua_tointeger(L, -1);
+          x:=lua_tointeger_alt(L, -1);
           c[coordinate-1].x:=x;
           lua_pop(L, 1);
 
           //get y
           lua_pushinteger(l, 2);
           lua_gettable(L, coordinateTable);
-          y:=lua_tointeger(L, -1);
+          y:=lua_tointeger_alt(L, -1);
           c[coordinate-1].y:=y;
           lua_pop(L, 1);
         end else exit;

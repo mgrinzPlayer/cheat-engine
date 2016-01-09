@@ -28,7 +28,7 @@ var
 begin
   Brush:=luaclass_getClassObject(L);
   if lua_gettop(L)>=1 then
-    Brush.color:=lua_tointeger(L, -1);
+    Brush.color:=lua_tointeger_alt(L, -1);
   result:=1;
 end;
 

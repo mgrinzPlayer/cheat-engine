@@ -27,6 +27,7 @@ var
   LuaVM: Plua_State;
   LuaCS: Tcriticalsection;
 
+function lua_tointeger_alt(L: Plua_State; idx: Integer): lua_Integer; cdecl;
 function lua_strtofloat(s: string): double;
 function lua_strtoint(s: string): integer;
 
@@ -478,6 +479,18 @@ begin
 
 
 
+end;
+
+function lua_tointeger_alt(L: Plua_State; idx: Integer): lua_Integer; cdecl;
+var
+  isnum: Integer;
+begin
+  result:=lua_tointegerx(L,idx,@isnum);
+  if isnum=0 then
+  begin
+    result:=trunc(lua_tonumberx(L,idx,@isnum));
+    if isnum=0 then raise exception.create('Not valid integer');
+  end;
 end;
 
 function lua_strtofloat(s: string): double;
@@ -1118,7 +1131,7 @@ begin
   result:=0;
 
   if parameters=1 then
-    windows.sleep(lua_tointeger(L, -1));
+    windows.sleep(lua_tointeger_alt(L, -1));
 
   lua_pop(L, parameters);
 end;
@@ -4724,12 +4737,12 @@ begin
 
   parameters:=lua_gettop(L);
   if parameters>=1 then
-    width:=lua_tointeger(L, 1)
+    width:=lua_tointeger_alt(L, 1)
   else
     width:=screen.width;
 
   if parameters>=2 then
-    height:=lua_tointeger(L, 2)
+    height:=lua_tointeger_alt(L, 2)
   else
     height:=screen.height;
 
@@ -4755,12 +4768,12 @@ begin
 
   parameters:=lua_gettop(L);
   if parameters>=1 then
-    width:=lua_tointeger(L, 1)
+    width:=lua_tointeger_alt(L, 1)
   else
     width:=screen.width;
 
   if parameters>=2 then
-    height:=lua_tointeger(L, 2)
+    height:=lua_tointeger_alt(L, 2)
   else
     height:=screen.height;
 
@@ -4786,12 +4799,12 @@ begin
 
   parameters:=lua_gettop(L);
   if parameters>=1 then
-    width:=lua_tointeger(L, 1)
+    width:=lua_tointeger_alt(L, 1)
   else
     width:=screen.width;
 
   if parameters>=2 then
-    height:=lua_tointeger(L, 2)
+    height:=lua_tointeger_alt(L, 2)
   else
     height:=screen.height;
 

@@ -30,7 +30,7 @@ begin
   result:=0;
   graphic:=luaclass_getClassObject(L);
   if lua_gettop(L)>=1 then
-    graphic.Width:=lua_tointeger(L, -1);
+    graphic.Width:=lua_tointeger_alt(L, -1);
 end;
 
 function graphic_getHeight(L: PLua_State): integer; cdecl;
@@ -49,7 +49,7 @@ begin
   result:=0;
   graphic:=luaclass_getClassObject(L);
   if lua_gettop(L)>=1 then
-    graphic.Height:=lua_tointeger(L, -1);
+    graphic.Height:=lua_tointeger_alt(L, -1);
 end;
 
 function graphic_getTransparent(L: PLua_State): integer; cdecl;

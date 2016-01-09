@@ -39,7 +39,7 @@ var
 begin
   Font:=luaclass_getClassObject(L);
   if lua_gettop(L)>=1 then
-    Font.color:=lua_tointeger(L, -1);
+    Font.color:=lua_tointeger_alt(L, -1);
   result:=0;
 end;
 
@@ -58,7 +58,7 @@ var
 begin
   Font:=luaclass_getClassObject(L);
   if lua_gettop(L)>=1 then
-    Font.Size:=lua_tointeger(L, -1);
+    Font.Size:=lua_tointeger_alt(L, -1);
   result:=0;
 end;
 

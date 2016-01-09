@@ -56,7 +56,7 @@ begin
   trackbar:=luaclass_getClassObject(L);
 
   if lua_gettop(L)>=1 then
-    trackbar.max:=lua_tointeger(L,-1);
+    trackbar.max:=lua_tointeger_alt(L,-1);
 end;
 
 function trackbar_getMin(L: PLua_State): integer; cdecl;
@@ -76,7 +76,7 @@ begin
   trackbar:=luaclass_getClassObject(L);
 
   if lua_gettop(L)>=1 then
-    trackbar.Min:=lua_tointeger(L,-1);
+    trackbar.Min:=lua_tointeger_alt(L,-1);
 end;
 
 
@@ -97,7 +97,7 @@ begin
   trackbar:=luaclass_getClassObject(L);
 
   if lua_gettop(L)>=1 then
-    trackbar.Position:=lua_tointeger(L,-1);
+    trackbar.Position:=lua_tointeger_alt(L,-1);
 end;
 
 function trackbar_getonChange(L: PLua_State): integer; cdecl;

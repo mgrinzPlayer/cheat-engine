@@ -115,7 +115,7 @@ begin
   parameters:=lua_gettop(L);
   if (xmplayer<>nil) and (parameters=1) then
   begin
-    v:=lua_tointeger(L,-1);
+    v:=lua_tointeger_alt(L,-1);
     xmplayer.setVolume(v);
   end;
 

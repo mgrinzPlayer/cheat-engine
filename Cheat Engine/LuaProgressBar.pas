@@ -55,7 +55,7 @@ begin
   result:=0;
   progressbar:=luaclass_getClassObject(L);
   if lua_gettop(L)>=1 then
-    progressbar.StepBy(lua_tointeger(L, -1));
+    progressbar.StepBy(lua_tointeger_alt(L, -1));
 end;
 
 
@@ -75,7 +75,7 @@ begin
   result:=0;
   progressbar:=luaclass_getClassObject(L);
   if lua_gettop(l)>=1 then
-    progressbar.max:=lua_tointeger(L, -1);
+    progressbar.max:=lua_tointeger_alt(L, -1);
 end;
 
 function progressbar_getMin(L: PLua_State): integer; cdecl;
@@ -94,7 +94,7 @@ begin
   result:=0;
   progressbar:=luaclass_getClassObject(L);
   if lua_gettop(l)>=1 then
-    progressbar.Min:=lua_tointeger(L, -1);
+    progressbar.Min:=lua_tointeger_alt(L, -1);
 end;
 
 function progressbar_getPosition(L: PLua_State): integer; cdecl;
@@ -113,7 +113,7 @@ begin
   result:=0;
   progressbar:=luaclass_getClassObject(L);
   if lua_gettop(l)>=1 then
-    progressbar.Position:=lua_tointeger(L, -1);
+    progressbar.Position:=lua_tointeger_alt(L, -1);
 end;
 
 procedure progressbar_addMetaData(L: PLua_state; metatable: integer; userdata: integer );

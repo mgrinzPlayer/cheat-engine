@@ -73,7 +73,7 @@ var
 begin
   c:=luaclass_getClassObject(L);
   if lua_gettop(L)=1 then //6.3+, class only so no need for >= and negative indexes
-    c.left:=lua_tointeger(L, 1);
+    c.left:=lua_tointeger_alt(L, 1);
 
   result:=0;
 end;
@@ -93,7 +93,7 @@ var
 begin
   c:=luaclass_getClassObject(L);
   if lua_gettop(L)=1 then
-    c.top:=lua_tointeger(L, 1);
+    c.top:=lua_tointeger_alt(L, 1);
 
   result:=0;
 end;
@@ -116,8 +116,8 @@ begin
 
   if lua_gettop(L)>=2 then
   begin
-    c.Left:=lua_tointeger(L, -2);
-    c.Top:=lua_tointeger(L, -1);
+    c.Left:=lua_tointeger_alt(L, -2);
+    c.Top:=lua_tointeger_alt(L, -1);
   end;
 end;
 
@@ -141,7 +141,7 @@ var
 begin
   c:=luaclass_getClassObject(L);
   if lua_gettop(L)=1 then
-    c.Width:=lua_tointeger(L, 1);
+    c.Width:=lua_tointeger_alt(L, 1);
 
   result:=0;
 end;
@@ -162,7 +162,7 @@ var
 begin
   c:=luaclass_getClassObject(L);
   if lua_gettop(L)=1 then
-    c.Height:=lua_tointeger(L, 1);
+    c.Height:=lua_tointeger_alt(L, 1);
 
   result:=0;
 end;
@@ -183,7 +183,7 @@ var
 begin
   c:=luaclass_getClassObject(L);
   if lua_gettop(L)=1 then
-    c.ClientWidth:=lua_tointeger(L, 1);
+    c.ClientWidth:=lua_tointeger_alt(L, 1);
 
   result:=0;
 end;
@@ -204,7 +204,7 @@ var
 begin
   c:=luaclass_getClassObject(L);
   if lua_gettop(L)=1 then
-    c.ClientHeight:=lua_tointeger(L, 1);
+    c.ClientHeight:=lua_tointeger_alt(L, 1);
 
   result:=0;
 end;
@@ -227,8 +227,8 @@ begin
 
   if lua_gettop(L)>=2 then
   begin
-    c.Width:=lua_tointeger(L, -2);
-    c.height:=lua_tointeger(L, -1);
+    c.Width:=lua_tointeger_alt(L, -2);
+    c.height:=lua_tointeger_alt(L, -1);
   end;
   result:=0;
 end;
@@ -312,7 +312,7 @@ var
 begin
   c:=luaclass_getClassObject(L);
   if lua_gettop(L)>=1 then
-    c.Color:=Tcolor(lua_tointeger(L,-1));
+    c.Color:=Tcolor(lua_tointeger_alt(L,-1));
 
   result:=0;
 end;

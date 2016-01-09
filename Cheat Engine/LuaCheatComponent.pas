@@ -42,7 +42,7 @@ begin
 
     if paramcount=2 then
     begin
-      deactivatetime:=lua_tointeger(L,paramstart+1);
+      deactivatetime:=lua_tointeger_alt(L,paramstart+1);
       if cheatcomponent.activated then
         cheatcomponent.setDeactivateTimer(deactivatetime);
 
@@ -123,7 +123,7 @@ begin
   cheatcomponent:=luaclass_getClassObject(L);
 
   if lua_gettop(L)>=1 then
-    cheatcomponent.Descriptionleft:=lua_tointeger(L,-1);
+    cheatcomponent.Descriptionleft:=lua_tointeger_alt(L,-1);
 end;
 
 
@@ -149,7 +149,7 @@ begin
   result:=0;
   cheatcomponent:=luaclass_getClassObject(L);
   if lua_gettop(L)>=1 then
-    cheatcomponent.Hotkeyleft:=lua_tointeger(L,-1);
+    cheatcomponent.Hotkeyleft:=lua_tointeger_alt(L,-1);
 end;
 
 function cheatcomponent_getEditValue(L: PLua_State): integer; cdecl;

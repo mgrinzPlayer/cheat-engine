@@ -86,10 +86,10 @@ begin
 
   if lua_gettop(L)>=4 then
   begin
-    sourcex:=lua_tointeger(L,-4);
-    sourcey:=lua_tointeger(L,-3);
-    destinationx:=lua_tointeger(L,-2);
-    destinationy:=lua_tointeger(L,-1);
+    sourcex:=lua_tointeger_alt(L,-4);
+    sourcey:=lua_tointeger_alt(L,-3);
+    destinationx:=lua_tointeger_alt(L,-2);
+    destinationy:=lua_tointeger_alt(L,-1);
     canvas.Line(sourcex, sourcey, destinationx, destinationy);
   end;
 end;
@@ -105,8 +105,8 @@ begin
 
   if lua_gettop(L)>=2 then
   begin
-    destinationx:=lua_tointeger(L,-2);
-    destinationy:=lua_tointeger(L,-1);
+    destinationx:=lua_tointeger_alt(L,-2);
+    destinationy:=lua_tointeger_alt(L,-1);
     canvas.LineTo(destinationx, destinationy);
   end;
 end;
@@ -123,10 +123,10 @@ begin
 
   if lua_gettop(L)>=4 then
   begin
-    x1:=lua_tointeger(L,-4);
-    y1:=lua_tointeger(L,-3);
-    x2:=lua_tointeger(L,-2);
-    y2:=lua_tointeger(L,-1);
+    x1:=lua_tointeger_alt(L,-4);
+    y1:=lua_tointeger_alt(L,-3);
+    x2:=lua_tointeger_alt(L,-2);
+    y2:=lua_tointeger_alt(L,-1);
 
     canvas.Rectangle(x1,y1,x2,y2);
   end;
@@ -142,10 +142,10 @@ begin
   canvas:=luaclass_getClassObject(L);
   if lua_gettop(L)>=4 then
   begin
-    x1:=lua_tointeger(L,-4);
-    y1:=lua_tointeger(L,-3);
-    x2:=lua_tointeger(L,-2);
-    y2:=lua_tointeger(L,-1);
+    x1:=lua_tointeger_alt(L,-4);
+    y1:=lua_tointeger_alt(L,-3);
+    x2:=lua_tointeger_alt(L,-2);
+    y2:=lua_tointeger_alt(L,-1);
 
     canvas.FillRect(x1,y1,x2,y2);
   end;
@@ -162,8 +162,8 @@ begin
   canvas:=luaclass_getClassObject(L);
   if lua_gettop(L)>=3 then
   begin
-    x:=lua_tointeger(L, -3);
-    y:=lua_tointeger(L, -2);
+    x:=lua_tointeger_alt(L, -3);
+    y:=lua_tointeger_alt(L, -2);
     text:=lua_tostring(L, -1);
     canvas.TextOut(x,y,text);
   end;
@@ -208,8 +208,8 @@ begin
   canvas:=luaclass_getClassObject(L);
   if lua_gettop(L)>=2 then
   begin
-    x:=lua_tointeger(L, -2);
-    y:=lua_tointeger(L, -1);
+    x:=lua_tointeger_alt(L, -2);
+    y:=lua_tointeger_alt(L, -1);
 
     lua_pushinteger(L, canvas.Pixels[x,y]);
     result:=1;
@@ -226,9 +226,9 @@ begin
   canvas:=luaclass_getClassObject(L);
   if lua_gettop(L)>=3 then
   begin
-    x:=lua_tointeger(L, -3);
-    y:=lua_tointeger(L, -2);
-    color:=TColor(lua_tointeger(L, -1));
+    x:=lua_tointeger_alt(L, -3);
+    y:=lua_tointeger_alt(L, -2);
+    color:=TColor(lua_tointeger_alt(L, -1));
 
     canvas.Pixels[x,y]:=color;
   end;
@@ -245,8 +245,8 @@ begin
   canvas:=luaclass_getClassObject(L);
   if lua_gettop(L)>=2 then
   begin
-    x:=lua_tointeger(L, -2);
-    y:=lua_tointeger(L, -1);
+    x:=lua_tointeger_alt(L, -2);
+    y:=lua_tointeger_alt(L, -1);
 
     TFPCustomCanvas(canvas).floodfill(x,y);
   end;
@@ -262,10 +262,10 @@ begin
   canvas:=luaclass_getClassObject(L);
   if lua_gettop(L)>=4 then
   begin
-    x1:=lua_tointeger(L,-4);
-    y1:=lua_tointeger(L,-3);
-    x2:=lua_tointeger(L,-2);
-    y2:=lua_tointeger(L,-1);
+    x1:=lua_tointeger_alt(L,-4);
+    y1:=lua_tointeger_alt(L,-3);
+    x2:=lua_tointeger_alt(L,-2);
+    y2:=lua_tointeger_alt(L,-1);
     canvas.Ellipse(x1,y1,x2,y2);
   end;
 end;
@@ -282,14 +282,14 @@ begin
   canvas:=luaclass_getClassObject(L);
   if lua_gettop(L)>=7 then
   begin
-    x1:=lua_tointeger(L,-7);
-    y1:=lua_tointeger(L,-6);
-    x2:=lua_tointeger(L,-5);
-    y2:=lua_tointeger(L,-4);
+    x1:=lua_tointeger_alt(L,-7);
+    y1:=lua_tointeger_alt(L,-6);
+    x2:=lua_tointeger_alt(L,-5);
+    y2:=lua_tointeger_alt(L,-4);
 
-    startcolor:=lua_tointeger(L,-3);
-    stopcolor:=lua_tointeger(L,-2);
-    direction:=lua_tointeger(L,-1);
+    startcolor:=lua_tointeger_alt(L,-3);
+    stopcolor:=lua_tointeger_alt(L,-2);
+    direction:=lua_tointeger_alt(L,-1);
 
     canvas.GradientFill(rect(x1,y1,x2,y2), startcolor, stopcolor, TGradientDirection(direction));
   end;
@@ -331,16 +331,16 @@ begin
 
   if lua_gettop(L)>=9 then
   begin
-    d_x1:=lua_tointeger(L,-9);
-    d_y1:=lua_tointeger(L,-8);
-    d_x2:=lua_tointeger(L,-7);
-    d_y2:=lua_tointeger(L,-6);
+    d_x1:=lua_tointeger_alt(L,-9);
+    d_y1:=lua_tointeger_alt(L,-8);
+    d_x2:=lua_tointeger_alt(L,-7);
+    d_y2:=lua_tointeger_alt(L,-6);
 
     graphic:=lua_toceuserdata(L,-5);
-    s_x1:=lua_tointeger(L,-4);
-    s_y1:=lua_tointeger(L,-3);
-    s_x2:=lua_tointeger(L,-2);
-    s_y2:=lua_tointeger(L,-1);
+    s_x1:=lua_tointeger_alt(L,-4);
+    s_y1:=lua_tointeger_alt(L,-3);
+    s_x2:=lua_tointeger_alt(L,-2);
+    s_y2:=lua_tointeger_alt(L,-1);
     drawWithMask(d_canvas, d_x1, d_y1, d_x2-d_x1, d_y2-d_y1, TRasterImage(graphic), s_x1, s_y1, s_x2-s_x1,s_y2-s_y1);
   end;
 end;
@@ -359,16 +359,16 @@ begin
 
   if lua_gettop(L)>=9 then
   begin
-    d_x1:=lua_tointeger(L,-9);
-    d_y1:=lua_tointeger(L,-8);
-    d_x2:=lua_tointeger(L,-7);
-    d_y2:=lua_tointeger(L,-6);
+    d_x1:=lua_tointeger_alt(L,-9);
+    d_y1:=lua_tointeger_alt(L,-8);
+    d_x2:=lua_tointeger_alt(L,-7);
+    d_y2:=lua_tointeger_alt(L,-6);
 
     s_canvas:=lua_toceuserdata(L,-5);
-    s_x1:=lua_tointeger(L,-4);
-    s_y1:=lua_tointeger(L,-3);
-    s_x2:=lua_tointeger(L,-2);
-    s_y2:=lua_tointeger(L,-1);
+    s_x1:=lua_tointeger_alt(L,-4);
+    s_y1:=lua_tointeger_alt(L,-3);
+    s_x2:=lua_tointeger_alt(L,-2);
+    s_y2:=lua_tointeger_alt(L,-1);
 
     d_canvas.CopyRect(rect(d_x1, d_y1, d_x2,d_y2), s_canvas, rect(s_x1, s_y1, s_x2,s_y2));
   end;
@@ -385,8 +385,8 @@ begin
   canvas:=luaclass_getClassObject(L);
   if lua_gettop(L)>=3 then
   begin
-    x:=lua_tointeger(L,-3);
-    y:=lua_tointeger(L,-2);
+    x:=lua_tointeger_alt(L,-3);
+    y:=lua_tointeger_alt(L,-2);
     graphic:=lua_toceuserdata(L,-1);
 
     canvas.draw(x,y, graphic);
@@ -413,8 +413,8 @@ begin
   canvas:=luaclass_getClassObject(L);
   if lua_gettop(L)>=2 then
   begin
-    Pos.x:=lua_toInteger(L,-2);
-    Pos.y:=lua_toInteger(L,-1);
+    Pos.x:=lua_tointeger_alt(L,-2);
+    Pos.y:=lua_tointeger_alt(L,-1);
     canvas.PenPos:=pos;
   end;
 end;
