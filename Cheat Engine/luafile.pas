@@ -5,7 +5,7 @@ unit luafile;
 interface
 
 uses
-  Classes, SysUtils, DOM, zstream, math, custombase85, fgl, xmlutils;
+  Classes, SysUtils, DOM, zstream, math, custombase85, custombase91, fgl, xmlutils;
 
 type TLuafile=class
   private
@@ -49,16 +49,16 @@ begin
   if node.HasAttributes then
   begin
     a:=node.Attributes.GetNamedItem('Encoding');
-    useascii85:=(a<>nil) and (a.TextContent='Ascii85');
+    useascii85:=(a<>nil) and (a.TextContent='Ascii91');
   end;
 
 
   if useascii85 then
   begin
-    size:=(length(s) div 5)*4+(length(s) mod 5);
-    maxsize:=max(65536,size);
-    getmem(b, maxsize);
-    size:=Base85ToBin(pchar(s), b);
+    //size:=(length(s) div 5)*4+(length(s) mod 5);
+    //maxsize:=max(65536,size);
+    //getmem(b, maxsize);
+    size:=Base91ToBin(pchar(s), b);
   end
   else
   begin
@@ -123,8 +123,8 @@ begin
 
 
   //convert the compressed file to an ascii85 sring
-  getmem(outputastext, (m.size div 4) * 5 + 5 );
-  BinToBase85(pchar(m.memory), outputastext, m.size);
+  //getmem(outputastext, (m.size div 4) * 5 + 5 );
+  BinToBase91(pchar(m.memory), outputastext, m.size);
 
   doc:=node.OwnerDocument;
   n:=Node.AppendChild(doc.CreateElement(name));
@@ -132,7 +132,7 @@ begin
 
 
   a:=doc.CreateAttribute('Encoding');
-  a.TextContent:='Ascii85';
+  a.TextContent:='Ascii91';
   n.Attributes.SetNamedItem(a);
 
   freemem(outputastext);
