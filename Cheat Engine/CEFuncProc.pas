@@ -2643,6 +2643,7 @@ begin
     vtDouble: Result:=rs_vtDouble;
     vtString: Result:=rs_vtString;
     vtUnicodeString: Result:=rs_vtUnicodeString;
+    vtCodePageString: Result:=rs_vtCodePageString;
     vtPointer: result:=rs_vtPointer;
     vtAutoAssembler: Result:=rs_vtAutoAssembler;
     vtCustom: Result:=rs_vtCustom;
@@ -2663,6 +2664,7 @@ begin
     vtDouble: Result:='Double';
     vtString: Result:='String';
     vtUnicodeString: Result:='Unicode String';
+    vtCodePageString: Result:='CodePage String';
     vtPointer: result:='Pointer';
     vtAutoAssembler: Result:='Auto Assembler Script';
     vtCustom: Result:='Custom';
@@ -2686,6 +2688,7 @@ begin
   if s='double' then Result :=vtDouble else
   if s='string' then  Result :=vtString else
   if s='unicode string' then result:=vtUnicodeString else
+  if s='codepage string' then result:=vtCodePageString else
   if s='pointer' then result:=vtPointer else
   if s='custom' then  Result :=vtCustom else
   if s='grouped' then result:=vtGrouped else
