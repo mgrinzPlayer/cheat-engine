@@ -426,13 +426,12 @@ begin
       if fOffsetString='' then exit(false);
       fspecial:=true;
 
-      foffset:=symhandler.getAddressFromName(fOffsetString, false, e);
-      if e then //try lua
+      if uppercase(copy(fOffsetString,1,4))='LUA:' then
       begin
 
         stack:=lua_gettop(luavm);
         try
-          if luaL_loadstring(luavm, pchar('local memrec, address=... ; return '+fOffsetString))<>0 then exit(false);
+          if luaL_loadstring(luavm, pchar('local memrec, address=... ; return '+copy(fOffsetString,5)))<>0 then exit(false);
 
           luaclass_newClass(luavm, owner.owner.memoryrecord);
           lua_pushinteger(luavm, fBaseAddress);
@@ -444,6 +443,9 @@ begin
         finally
           lua_settop(luavm, stack);
         end;
+      end else begin
+        foffset:=symhandler.getAddressFromName(fOffsetString, false, e);
+        if e then exit(false);
       end;
 
       finvalidOffset:=false;

@@ -574,13 +574,12 @@ begin
 
 
   special:=true;
-  //parse it as a symbolhandler text, if that fails, try lua
+  //parse it as a lua or symbolhandler text
 
-  foffset:=symhandler.getAddressFromName(s, false, e);
-  if e then
+  if uppercase(copy(s,1,4))='LUA:' then
   begin
     //try lua
-    s2:='local memrec, address=... ; return '+s;
+    s2:='local memrec, address=... ; return '+copy(s,5);
 
 {$ifndef JNI}
     stack:=lua_Gettop(luavm);
@@ -610,7 +609,7 @@ begin
       end;
     end;  }
 
-  end else funparsed:=false;
+  end else foffset:=symhandler.getAddressFromName(s, false, funparsed);
 
 end;
 
