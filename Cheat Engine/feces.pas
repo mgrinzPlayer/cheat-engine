@@ -119,6 +119,7 @@ var
   signature: TDOMNode;
   publicKey: TDOMNode;
   signedhash: TDOMNode;
+  a: TDOMNode;
 
   size: integer;
 
@@ -159,6 +160,7 @@ var
 
   imagebuf: pointer;
   imagestream: TMemorystream;
+  imageposoverride: integer;
 begin
   if not initialize_bCrypt then
     exit(false);
@@ -186,6 +188,10 @@ begin
 
 
     publickeysize:=strtoint(TDOMElement(publickey).Attributes.GetNamedItem('Size').TextContent);
+
+    a:=TDOMElement(publickey).Attributes.GetNamedItem('imgpos');
+    if (a<>nil) and TryStrToInt(a.TextContent, imageposoverride) then
+    else imageposoverride:=0;
 
     getmem(publickeyblock, publickeysize);
 
@@ -231,6 +237,7 @@ begin
       imagepos:=publicdata.ReadByte;
       if imagepos<>0 then
       begin
+        if (imageposoverride>0) and (imageposoverride<8) then imagepos:=imageposoverride;
         x:=publicdata.readdword; //image size
 
         imagestream:=tmemorystream.create;
@@ -427,6 +434,8 @@ var
 
   tempstr: pchar=nil;
   sigversion: word;
+  str: string;
+  v,imagepos: integer;
 begin
   if not initialize_bCrypt then
     raise exception.create(rsBcryptCouldNotBeUsed);
@@ -463,6 +472,7 @@ begin
     if sigversion>=1 then
     begin
       x:=m.ReadByte;
+      imagepos:=x;
       if x<>0 then
       begin
         x:=m.readdword; //image size
@@ -549,6 +559,15 @@ begin
     BinToBase85(publicdata.Memory, tempstr,publicdata.Size);
     publickey.TextContent:=tempstr;
     TDOMElement(publickey).SetAttribute('Size',IntToStr(publicdata.Size));
+
+    if imagepos<>0 then //image exist
+    begin
+      str:=inttostr(imagepos);
+      if InputQuery('Change image position',
+                    'What will be the image position [1-7], cancel=cesig default', str)
+         and TryStrToInt(str,v) and (v>0) and (v<8) and (imagepos<>v) then
+        TDOMElement(publickey).SetAttribute('imgpos',IntToStr(v));
+    end;
 
     freemem(tempstr);
     tempstr:=nil;
