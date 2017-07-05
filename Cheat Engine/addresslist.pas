@@ -32,6 +32,9 @@ type
     lastSelected: integer;
 
     header: THeaderControl;
+    sectionActuallyDragged: Boolean;
+    draggedSection: THeaderSection;
+    draggedSectionIndex: integer;
     Treeview: TTreeviewWithScroll; //TTreeview;//WithScroll;
     CurrentlyDraggedOverNode: TTreenode;
     CurrentlyDraggedOverBefore: boolean; //set to true if inserting before
@@ -77,6 +80,8 @@ type
     procedure SelectionUpdate(sender: TObject);
     procedure sectiontrack(HeaderControl: TCustomHeaderControl; Section: THeaderSection; Width: Integer; State: TSectionTrackState);
     procedure sectionClick(HeaderControl: TCustomHeaderControl; Section: THeaderSection);
+    procedure sectionDrag(Sender: TObject; FromSection, ToSection: THeaderSection; var AllowDrag: Boolean); 
+    procedure sectionEndDrag(Sender: TObject);
     procedure FocusChange(sender: TObject);
     procedure DragOver(Sender, Source: TObject; X,Y: Integer; State: TDragState; var Accept: Boolean);
     procedure DragDrop(Sender, Source: TObject; X,Y: Integer);
@@ -1157,7 +1162,7 @@ begin
     if AddressListEditor<>nil then
       freeandnil(AddressListEditor);
 
-    AddressListEditor:=TAddresslisteditor.create(treeview, memrec, header.Sections[4].Left);
+    AddressListEditor:=TAddresslisteditor.create(treeview, memrec, header.SectionFromOriginalIndex[4].Left);
     AddressListEditor.OnDblClick:=EditorDoubleclick;
   end
   else
@@ -1213,7 +1218,7 @@ begin
     if p.x<=textrect.left+(linerect.bottom-linerect.top)+8 then exit;
 
     for i:=0 to header.Sections.count-1 do
-      if inrange(p.x,header.Sections[i].Left,header.Sections[i].right) then
+      if inrange(p.x,header.SectionFromOriginalIndex[i].Left,header.SectionFromOriginalIndex[i].right) then
       begin
         //if it's a auto assemble script only do the description and value
         if (TMemoryRecord(node.data).VarType=vtAutoAssembler) or (TMemoryRecord(node.data).isGroupHeader) then
@@ -1540,6 +1545,32 @@ end;
 procedure TAddresslist.sectiontrack(HeaderControl: TCustomHeaderControl; Section: THeaderSection; Width: Integer; State: TSectionTrackState);
 begin
   treeview.Refresh;
+end;
+
+procedure TAddresslist.sectionDrag(Sender: TObject; FromSection, ToSection: THeaderSection; var AllowDrag: Boolean);
+begin
+  if ((FromSection.Index=0) or (ToSection.Index=0)) or // - 'Active' section can not be touched
+     ((FromSection.Index=1) or (ToSection.Index=1)) or // - 'Description' section can not be touched
+     (FromSection.Index=ToSection.Index) or            // - same index,
+     (FromSection.Index+1=ToSection.Index) then        // - or index+1
+  begin // don't drag
+    AllowDrag:=false;
+    sectionActuallyDragged:=false;
+    exit;
+  end;
+
+  sectionActuallyDragged:=true;
+  draggedSection:=FromSection;
+  draggedSectionIndex:=FromSection.Index;  
+end;
+
+procedure TAddresslist.sectionEndDrag(Sender: TObject);
+begin
+  if sectionActuallyDragged and (draggedSectionIndex=4) then
+  begin
+    draggedSection.Width:=header.Sections[4].Width;
+    header.Sections[4].Width:=9000000;
+  end; 
 end;
 
 procedure TAddresslist.FocusChange(sender: TObject);
@@ -2043,7 +2074,7 @@ begin
 
       animationtimer.enabled:=true;
     end;
-    descriptionstart:=max(checkbox.right+10,header.Sections[1].Left);
+    descriptionstart:=max(checkbox.right+10,header.SectionFromOriginalIndex[1].Left);
 
 
 
@@ -2054,44 +2085,44 @@ begin
     if (memrec.isGroupHeader=false) and (memrec.VarType<>vtAutoAssembler) then //if it's not a groupheader of auto assemble script then show the extra data
     begin
       //limit how far the texts go depending on the sections
-      sender.Canvas.TextRect(rect(descriptionstart, textrect.Top, header.Sections[1].right, textrect.bottom), descriptionstart, linetop, memrec.description);
+      sender.Canvas.TextRect(rect(descriptionstart, textrect.Top, header.SectionFromOriginalIndex[1].right, textrect.bottom), descriptionstart, linetop, memrec.description);
 
       //if this is not the currently dragged over node
       //or if it is and either CurrentlyDraggedOverBefore or CurrentlyDraggedOverAfter is set then draw the rest
       if not ((node=CurrentlyDraggedOverNode) and (not (CurrentlyDraggedOverBefore or CurrentlyDraggedOverAfter))) then //don't draw the rest on insert drag/drop
       begin
         //address
-        sender.Canvas.TextRect(rect(header.Sections[2].left, textrect.Top, header.Sections[2].right, textrect.bottom),header.Sections[2].Left, linetop, ansitoutf8(memrec.addressString));
+        sender.Canvas.TextRect(rect(header.SectionFromOriginalIndex[2].left, textrect.Top, header.SectionFromOriginalIndex[2].right, textrect.bottom),header.SectionFromOriginalIndex[2].Left, linetop, ansitoutf8(memrec.addressString));
 
         //type
         case memrec.vartype of
-          vtCustom: sender.Canvas.TextRect(rect(header.Sections[3].left, textrect.Top, header.Sections[3].right, textrect.bottom),header.sections[3].left, linetop, memrec.CustomTypeName);
+          vtCustom: sender.Canvas.TextRect(rect(header.SectionFromOriginalIndex[3].left, textrect.Top, header.SectionFromOriginalIndex[3].right, textrect.bottom),header.SectionFromOriginalIndex[3].left, linetop, memrec.CustomTypeName);
           vtString:
           begin
             if not (memrec.Extra.stringData.unicode or memrec.Extra.stringData.codepage) then
-              sender.Canvas.TextRect(rect(header.Sections[3].left, textrect.Top, header.Sections[3].right, textrect.bottom),header.sections[3].left, linetop, VariableTypeToTranslatedString(memrec.VarType)+'['+inttostr(memrec.Extra.stringData.length)+']')
+              sender.Canvas.TextRect(rect(header.SectionFromOriginalIndex[3].left, textrect.Top, header.SectionFromOriginalIndex[3].right, textrect.bottom),header.SectionFromOriginalIndex[3].left, linetop, VariableTypeToTranslatedString(memrec.VarType)+'['+inttostr(memrec.Extra.stringData.length)+']')
             else if memrec.Extra.stringData.unicode then
-              sender.Canvas.TextRect(rect(header.Sections[3].left, textrect.Top, header.Sections[3].right, textrect.bottom),header.sections[3].left, linetop, VariableTypeToTranslatedString(vtUnicodeString)+'['+inttostr(memrec.Extra.stringData.length)+']')
+              sender.Canvas.TextRect(rect(header.SectionFromOriginalIndex[3].left, textrect.Top, header.SectionFromOriginalIndex[3].right, textrect.bottom),header.SectionFromOriginalIndex[3].left, linetop, VariableTypeToTranslatedString(vtUnicodeString)+'['+inttostr(memrec.Extra.stringData.length)+']')
             else
-              sender.Canvas.TextRect(rect(header.Sections[3].left, textrect.Top, header.Sections[3].right, textrect.bottom),header.sections[3].left, linetop, VariableTypeToTranslatedString(vtCodePageString)+'['+inttostr(memrec.Extra.stringData.length)+']');
+              sender.Canvas.TextRect(rect(header.SectionFromOriginalIndex[3].left, textrect.Top, header.SectionFromOriginalIndex[3].right, textrect.bottom),header.SectionFromOriginalIndex[3].left, linetop, VariableTypeToTranslatedString(vtCodePageString)+'['+inttostr(memrec.Extra.stringData.length)+']');
           end;
           vtBinary:
           begin
             if memrec.Extra.bitData.bitlength=0 then
-              sender.Canvas.TextRect(rect(header.Sections[3].left, textrect.Top, header.Sections[3].right, textrect.bottom),header.sections[3].left, linetop, VariableTypeToTranslatedString(memrec.VarType)+':'+inttostr(memrec.Extra.bitData.Bit)+'->idiot')
+              sender.Canvas.TextRect(rect(header.SectionFromOriginalIndex[3].left, textrect.Top, header.SectionFromOriginalIndex[3].right, textrect.bottom),header.SectionFromOriginalIndex[3].left, linetop, VariableTypeToTranslatedString(memrec.VarType)+':'+inttostr(memrec.Extra.bitData.Bit)+'->idiot')
             else
-              sender.Canvas.TextRect(rect(header.Sections[3].left, textrect.Top, header.Sections[3].right, textrect.bottom),header.sections[3].left, linetop, VariableTypeToTranslatedString(memrec.VarType)+':'+inttostr(memrec.Extra.bitData.Bit)+'->'+inttostr(memrec.Extra.bitData.Bit+memrec.Extra.bitData.bitlength-1));
+              sender.Canvas.TextRect(rect(header.SectionFromOriginalIndex[3].left, textrect.Top, header.SectionFromOriginalIndex[3].right, textrect.bottom),header.SectionFromOriginalIndex[3].left, linetop, VariableTypeToTranslatedString(memrec.VarType)+':'+inttostr(memrec.Extra.bitData.Bit)+'->'+inttostr(memrec.Extra.bitData.Bit+memrec.Extra.bitData.bitlength-1));
           end
           else
           begin
 
-            sender.Canvas.TextRect(rect(header.Sections[3].left, textrect.Top, header.Sections[3].right, textrect.bottom),header.sections[3].left, linetop, VariableTypeToTranslatedString(memrec.VarType));
+            sender.Canvas.TextRect(rect(header.SectionFromOriginalIndex[3].left, textrect.Top, header.SectionFromOriginalIndex[3].right, textrect.bottom),header.SectionFromOriginalIndex[3].left, linetop, VariableTypeToTranslatedString(memrec.VarType));
           end
         end;
 
 
         //value
-        sender.Canvas.TextRect(rect(header.Sections[4].left, textrect.top, header.Sections[4].right, textrect.bottom),header.sections[4].left, linetop, memrec.DisplayValue);
+        sender.Canvas.TextRect(rect(header.SectionFromOriginalIndex[4].left, textrect.top, header.SectionFromOriginalIndex[4].right, textrect.bottom),header.SectionFromOriginalIndex[4].left, linetop, memrec.DisplayValue);
       end;
     end
     else
@@ -2099,7 +2130,7 @@ begin
       sender.Canvas.TextOut(descriptionstart, textrect.Top, memrec.description); //no limit on how far
 
       if (memrec.VarType=vtAutoAssembler) then //give it the <script> text for value
-        sender.Canvas.TextRect(rect(header.Sections[4].left, textrect.Top, header.Sections[4].right, textrect.bottom), header.sections[4].left, linetop, rsScript);
+        sender.Canvas.TextRect(rect(header.SectionFromOriginalIndex[4].left, textrect.Top, header.SectionFromOriginalIndex[4].right, textrect.bottom), header.SectionFromOriginalIndex[4].left, linetop, rsScript);
 
     end;
 
@@ -2263,7 +2294,11 @@ begin
   header.OnSectionTrack:=SectionTrack;
 
   header.OnSectionClick:=SectionClick;
+
+  header.OnSectionDrag:=SectionDrag;
+  header.OnSectionEndDrag:=SectionEndDrag;
   header.AutoSize:=true;
+  header.DragReorder:=true;
 
   treeview.ScrollBars:=ssVertical;
   treeview.Align:=alClient;
