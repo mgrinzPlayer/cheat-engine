@@ -5326,10 +5326,16 @@ begin
 
   symhandler.loadCommonModuleList;
 
-  setlength(x, 7);
+  setlength(x, 10);
   if loadformposition(self, x) then
   begin
     autosize:=false;
+    if length(x)>=10 then
+    begin
+      addresslist.headers.SectionFromOriginalIndex[2].Index:=x[7];
+      addresslist.headers.SectionFromOriginalIndex[3].Index:=x[8];
+      addresslist.headers.SectionFromOriginalIndex[4].Index:=x[9];
+    end;
     addresslist.headers.Sections[0].Width := x[0];
     addresslist.headers.Sections[1].Width := x[1];
     addresslist.headers.Sections[2].Width := x[2];
@@ -7487,17 +7493,17 @@ begin
     self.position:=poDesigned;
     self.position:=poScreenCenter;
 
-    i:=addresslist.headers.Canvas.TextWidth(addresslist.headers.Sections[0].Text+' ');
-    if i>addresslist.headers.Sections[0].Width then addresslist.headers.Sections[0].Width:=i;
+    i:=addresslist.headers.Canvas.TextWidth(addresslist.headers.SectionFromOriginalIndex[0].Text+' ');
+    if i>addresslist.headers.SectionFromOriginalIndex[0].Width then addresslist.headers.SectionFromOriginalIndex[0].Width:=i;
 
-    i:=max(addresslist.headers.Canvas.TextWidth(addresslist.headers.Sections[1].Text), addresslist.headers.Canvas.TextWidth(strNoDescription));
-    if i>addresslist.headers.Sections[1].Width then addresslist.headers.Sections[1].Width:=i;
+    i:=max(addresslist.headers.Canvas.TextWidth(addresslist.headers.SectionFromOriginalIndex[1].Text), addresslist.headers.Canvas.TextWidth(strNoDescription));
+    if i>addresslist.headers.SectionFromOriginalIndex[1].Width then addresslist.headers.SectionFromOriginalIndex[1].Width:=i;
 
-    i:=max(addresslist.headers.Canvas.TextWidth(addresslist.headers.Sections[2].Text), addresslist.headers.Canvas.TextWidth('P->DDDDDDDDDDDD'));
-    if i>addresslist.headers.Sections[2].Width then addresslist.headers.Sections[2].Width:=i;
+    i:=max(addresslist.headers.Canvas.TextWidth(addresslist.headers.SectionFromOriginalIndex[2].Text), addresslist.headers.Canvas.TextWidth('P->DDDDDDDDDDDD'));
+    if i>addresslist.headers.SectionFromOriginalIndex[2].Width then addresslist.headers.SectionFromOriginalIndex[2].Width:=i;
 
-    i:=max(addresslist.headers.Canvas.TextWidth(addresslist.headers.Sections[3].Text), addresslist.headers.Canvas.TextWidth(rs_vtByteArray));
-    if i>addresslist.headers.Sections[3].Width then addresslist.headers.Sections[3].Width:=i;
+    i:=max(addresslist.headers.Canvas.TextWidth(addresslist.headers.SectionFromOriginalIndex[3].Text), addresslist.headers.Canvas.TextWidth(rs_vtByteArray));
+    if i>addresslist.headers.SectionFromOriginalIndex[3].Width then addresslist.headers.SectionFromOriginalIndex[3].Width:=i;
 
 
     //initial state: focus on the addresslist
@@ -9186,7 +9192,10 @@ begin
     addresslist.headers.Sections[3].Width,
     addresslist.headers.Sections[4].Width,
     panel5.Height,
-    foundlist3.columns[0].Width]);
+    foundlist3.columns[0].Width,
+    addresslist.headers.SectionFromOriginalIndex[2].Index,
+    addresslist.headers.SectionFromOriginalIndex[3].Index,
+    addresslist.headers.SectionFromOriginalIndex[4].Index]);
 
 
   if foundlist <> nil then
