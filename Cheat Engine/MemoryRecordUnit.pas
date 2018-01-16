@@ -242,7 +242,6 @@ type
 
     procedure OnLinkedMemrecDestroy(Sender: TObject);
 
-    function getlinkedDropDownMemrec: TMemoryRecord;
   public
 
 
@@ -320,6 +319,8 @@ type
     function getLuaRef: integer;
     function isProcessing: boolean;
     function getProcessingTime: qword;
+
+    function getlinkedDropDownMemrec: TMemoryRecord;
 
     constructor Create(AOwner: TObject);
     destructor destroy; override;
