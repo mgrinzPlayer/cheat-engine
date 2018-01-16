@@ -818,10 +818,19 @@ begin
   end;
 end;
 
+function memoryrecord_getOriginalDropDownList(L: PLua_State): integer; cdecl;
+var
+  mr: TMemoryRecord;
+  index: integer;
+begin
+  result:=1;
+  mr:=luaclass_getClassObject(L);
+  luaclass_newClass(L, mr.DropDownList);
+end;
+
 function memoryrecord_getDropDownList(L: PLua_State): integer; cdecl;
 var
   mr,otherMemRec: TMemoryRecord;
-  ddl: Tstringlist;
   index: integer;
 begin
   result:=1;
@@ -870,7 +879,7 @@ end;
 
 function memoryrecord_setDropDownValue(L: PLua_State): integer; cdecl;
 var
-  mr: TMemoryRecord;
+  mr,otherMemRec: TMemoryRecord;
   ddl: Tstringlist;
   index: integer;
 begin
@@ -880,21 +889,28 @@ begin
   if (lua_gettop(L)=2) then
   begin
     index:=lua_toInteger(L,1);
-    if not mr.DropDownLinked then
+    if mr.DropDownLinked then
     begin
-      ddl:=mr.DropDownList;
-      if index<ddl.Count then
-        try
-          ddl[index]:=Lua_ToString(L, 2)+copy(ddl[index], pos(':', ddl[index]), length(ddl[index]));
-        except
-        end;
+      otherMemRec:=mr.getlinkedDropDownMemrec;
+      if otherMemRec<>nil then
+        ddl:=otherMemRec.DropDownList
+      else
+        ddl:=mr.DropDownList;
     end
+    else
+      ddl:=mr.DropDownList;
+
+    if index<ddl.Count then
+      try
+        ddl[index]:=Lua_ToString(L, 2)+copy(ddl[index], pos(':', ddl[index]), length(ddl[index]));
+      except
+      end;
   end;
 end;
 
 function memoryrecord_setDropDownDescription(L: PLua_State): integer; cdecl;
 var
-  mr: TMemoryRecord;
+  mr,otherMemRec: TMemoryRecord;
   ddl: Tstringlist;
   index: integer;
 begin
@@ -904,15 +920,22 @@ begin
   if (lua_gettop(L)=2) then
   begin
     index:=lua_toInteger(L,1);
-    if not mr.DropDownLinked then
+    if mr.DropDownLinked then
     begin
-      ddl:=mr.DropDownList;
-      if index<ddl.Count then
-        try
-          ddl[index]:=copy(ddl[index], 1, pos(':', ddl[index]))+Lua_ToString(L, 2);
-        except
-        end;
+      otherMemRec:=mr.getlinkedDropDownMemrec;
+      if otherMemRec<>nil then
+        ddl:=otherMemRec.DropDownList
+      else
+        ddl:=mr.DropDownList;
     end
+    else
+      ddl:=mr.DropDownList;
+
+    if index<ddl.Count then
+      try
+        ddl[index]:=copy(ddl[index], 1, pos(':', ddl[index]))+Lua_ToString(L, 2);
+      except
+      end;
   end;
 end;
 
@@ -979,6 +1002,7 @@ begin
   luaclass_addArrayPropertyToTable(L, metatable, userdata, 'OffsetText', memoryrecord_getOffsetText, memoryrecord_setOffsetText);
 
   luaclass_addPropertyToTable(L, metatable, userdata, 'DropDownList', memoryrecord_getDropDownList, nil);
+  luaclass_addPropertyToTable(L, metatable, userdata, 'OriginalDropDownList', memoryrecord_getOriginalDropDownList, nil);
   luaclass_addArrayPropertyToTable(L, metatable, userdata, 'DropDownValue', memoryrecord_getDropDownValue, memoryrecord_setDropDownValue);
   luaclass_addArrayPropertyToTable(L, metatable, userdata, 'DropDownDescription', memoryrecord_getDropDownDescription, memoryrecord_setDropDownDescription);
 
