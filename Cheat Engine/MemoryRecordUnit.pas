@@ -177,7 +177,7 @@ type
     fDropDownLinked: boolean;
     fDropDownLinkedMemrec: string;
     linkedDropDownMemrec: TMemoryRecord;
-    OldlinkedDropDownMemrecOnDestroy: TNotifyEvent;
+    LinkedDropDownMemrecIndex: integer; // index inside LinkedDropDownMemrecList TList
 
 
     fDontSave: boolean;
@@ -233,16 +233,13 @@ type
     function getDropDownDescriptionOnly: boolean;
     function getDisplayAsDropDownListItem: boolean;
 
+    procedure setDropDownLinkedMemrec(s: string);
 
 
     function GetCollapsed: boolean;
     procedure SetCollapsed(state: boolean);
 
     procedure processingDone; //called by the processingThread when finished
-
-    procedure OnLinkedMemrecDestroy(Sender: TObject);
-
-    function getlinkedDropDownMemrec: TMemoryRecord;
   public
 
 
@@ -321,6 +318,8 @@ type
     function isProcessing: boolean;
     function getProcessingTime: qword;
 
+    function getlinkedDropDownMemrec(count: integer=0): TMemoryRecord;
+
     constructor Create(AOwner: TObject);
     destructor destroy; override;
 
@@ -357,7 +356,7 @@ type
     property Options: TMemrecOptions read fOptions write setOptions;
 
     property DropDownLinked: boolean read fDropDownLinked write fDropDownLinked;
-    property DropDownLinkedMemrec: string read fDropDownLinkedMemrec write fDropDownLinkedMemrec;
+    property DropDownLinkedMemrec: string read fDropDownLinkedMemrec write setDropDownLinkedMemrec;
     property DropDownList: TStringlist read fDropDownList;
     property DropDownReadOnly: boolean read getDropDownReadOnly write fDropDownReadOnly;
     property DropDownDescriptionOnly: boolean read getDropDownDescriptionOnly write fDropDownDescriptionOnly;
@@ -440,6 +439,8 @@ uses mainunit, addresslist, formsettingsunit, LuaHandler, lua, lauxlib, lualib,
 {$ifdef unix}
 uses processhandlerunit, Parsers;
 {$endif}
+
+var  LinkedDropDownMemrecList: TList;
 
 {---------------------TMemoryRecordProcessingThread-------------------------}
 procedure TMemoryRecordProcessingThread.Execute;
@@ -765,6 +766,11 @@ begin
   {$endif}
 end;
 
+procedure TMemoryRecord.setDropDownLinkedMemrec(s: string);
+begin
+  fDropDownLinkedMemrec:=s;
+  linkedDropDownMemrec:=nil;
+end;
 
 function TMemoryRecord.getDropDownCount: integer;
 var mr: tmemoryrecord;
@@ -974,11 +980,8 @@ begin
     freeandnil(processingThread);
   end;
 
-  if linkedDropDownMemrec<>nil then
-  begin
-    linkedDropDownMemrec.OnDestroy:=OldlinkedDropDownMemrecOnDestroy;
-    linkedDropDownMemrec:=nil;
-  end;
+  if LinkedDropDownMemrecList.IndexOf(self)<>-1 then
+    LinkedDropDownMemrecList.Items[LinkedDropDownMemrecList.IndexOf(self)]:=nil;
 
   if assigned(fOnDestroy) then
     fOnDestroy(self);
@@ -3103,23 +3106,30 @@ begin
   self.RealAddress:=result;
 end;
 
-procedure TMemoryRecord.OnLinkedMemrecDestroy(Sender: TObject);
+function TMemoryRecord.getlinkedDropDownMemrec(count: integer=0): TMemoryRecord;
+var foundMR: TMemoryRecord;
 begin
-  linkedDropDownMemrec:=nil;
-  if assigned(OldlinkedDropDownMemrecOnDestroy) then
-    OldlinkedDropDownMemrecOnDestroy(sender);
-end;
+  if count>10000 then
+    begin OutputDebugString('getlinkedDropDownMemrec loop detected'); exit(nil); end;
 
-function TMemoryRecord.getlinkedDropDownMemrec: TMemoryRecord;
-begin
-  if linkedDropDownMemrec=nil then
+  // first time or original linkedDropDownMemrec no longer exists
+  if (linkedDropDownMemrec=nil) or
+     (LinkedDropDownMemrecList.Items[LinkedDropDownMemrecIndex]=nil) then
   begin
-    linkedDropDownMemrec:=TAddresslist(fOwner).getRecordWithDescription(fDropDownLinkedMemrec);
-    if linkedDropDownMemrec<>nil then
+    foundMR:=TAddresslist(fOwner).getRecordWithDescription(fDropDownLinkedMemrec);
+    if foundMR<>nil then
     begin
-      OldlinkedDropDownMemrecOnDestroy:=linkedDropDownMemrec.OnDestroy;
-      linkedDropDownMemrec.OnDestroy:=OnLinkedMemrecDestroy;
+      if foundMR.DropDownLinked then // get root DropDownMemrec recursively
+        foundMR:=foundMR.getlinkedDropDownMemrec(count+1);
+
+      LinkedDropDownMemrecIndex:=LinkedDropDownMemrecList.IndexOf(foundMR);
+      if LinkedDropDownMemrecIndex=-1 then
+      begin
+        LinkedDropDownMemrecList.add(foundMR);
+        LinkedDropDownMemrecIndex:=LinkedDropDownMemrecList.Count-1;
+      end;
     end;
+    linkedDropDownMemrec:=foundMR;
   end;
 
   result:=linkedDropDownMemrec;
@@ -3157,6 +3167,9 @@ begin
   else
     result:=mrhToggleActivation;
 end;
+
+initialization
+  LinkedDropDownMemrecList:=TList.Create;
 
 end.
 
