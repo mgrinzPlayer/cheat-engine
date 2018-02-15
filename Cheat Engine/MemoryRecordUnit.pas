@@ -177,7 +177,7 @@ type
     fDropDownLinked: boolean;
     fDropDownLinkedMemrec: string;
     linkedDropDownMemrec: TMemoryRecord;
-    OldlinkedDropDownMemrecOnDestroy: TNotifyEvent;
+    SnapshotOfMemRecsDestroyedCounter: qword;
 
 
     fDontSave: boolean;
@@ -233,16 +233,13 @@ type
     function getDropDownDescriptionOnly: boolean;
     function getDisplayAsDropDownListItem: boolean;
 
+    procedure setDropDownLinkedMemrec(s: string);
 
 
     function GetCollapsed: boolean;
     procedure SetCollapsed(state: boolean);
 
     procedure processingDone; //called by the processingThread when finished
-
-    procedure OnLinkedMemrecDestroy(Sender: TObject);
-
-    function getlinkedDropDownMemrec: TMemoryRecord;
   public
 
 
@@ -321,6 +318,9 @@ type
     function isProcessing: boolean;
     function getProcessingTime: qword;
 
+    function getlinkedDropDownMemrec: TMemoryRecord;
+    function getlinkedDropDownMemrec_LoopDetected: boolean;
+
     constructor Create(AOwner: TObject);
     destructor destroy; override;
 
@@ -357,7 +357,7 @@ type
     property Options: TMemrecOptions read fOptions write setOptions;
 
     property DropDownLinked: boolean read fDropDownLinked write fDropDownLinked;
-    property DropDownLinkedMemrec: string read fDropDownLinkedMemrec write fDropDownLinkedMemrec;
+    property DropDownLinkedMemrec: string read fDropDownLinkedMemrec write setDropDownLinkedMemrec;
     property DropDownList: TStringlist read fDropDownList;
     property DropDownReadOnly: boolean read getDropDownReadOnly write fDropDownReadOnly;
     property DropDownDescriptionOnly: boolean read getDropDownDescriptionOnly write fDropDownDescriptionOnly;
@@ -440,6 +440,9 @@ uses mainunit, addresslist, formsettingsunit, LuaHandler, lua, lauxlib, lualib,
 {$ifdef unix}
 uses processhandlerunit, Parsers;
 {$endif}
+
+var
+  MemRecsDestroyedCounter: qword;
 
 {---------------------TMemoryRecordProcessingThread-------------------------}
 procedure TMemoryRecordProcessingThread.Execute;
@@ -765,6 +768,11 @@ begin
   {$endif}
 end;
 
+procedure TMemoryRecord.setDropDownLinkedMemrec(s: string);
+begin
+  fDropDownLinkedMemrec:=s;
+  linkedDropDownMemrec:=nil;
+end;
 
 function TMemoryRecord.getDropDownCount: integer;
 var mr: tmemoryrecord;
@@ -957,6 +965,9 @@ begin
   hotkeylist:=tlist.create;
   fDropDownList:=tstringlist.create;
 
+  linkedDropDownMemrec:=nil;
+  SnapshotOfMemRecsDestroyedCounter:=0;
+
   foptions:=[];
 
   luaref:=-1;
@@ -974,11 +985,7 @@ begin
     freeandnil(processingThread);
   end;
 
-  if linkedDropDownMemrec<>nil then
-  begin
-    linkedDropDownMemrec.OnDestroy:=OldlinkedDropDownMemrecOnDestroy;
-    linkedDropDownMemrec:=nil;
-  end;
+  Inc(MemRecsDestroyedCounter);
 
   if assigned(fOnDestroy) then
     fOnDestroy(self);
@@ -3103,23 +3110,34 @@ begin
   self.RealAddress:=result;
 end;
 
-procedure TMemoryRecord.OnLinkedMemrecDestroy(Sender: TObject);
+function TMemoryRecord.getlinkedDropDownMemrec_LoopDetected: boolean;
+var mr_slow,mr_fast: TMemoryRecord;
 begin
-  linkedDropDownMemrec:=nil;
-  if assigned(OldlinkedDropDownMemrecOnDestroy) then
-    OldlinkedDropDownMemrecOnDestroy(sender);
+  result:=false;
+
+  mr_slow:=linkedDropDownMemrec;
+  mr_fast:=linkedDropDownMemrec;
+
+  // Floyd’s Cycle-Finding Algorithm
+  while (mr_slow<>nil) and (mr_fast<>nil) and (mr_fast.getlinkedDropDownMemrec<>nil) do
+  begin
+    mr_slow:=mr_slow.getlinkedDropDownMemrec;
+    mr_fast:=mr_fast.getlinkedDropDownMemrec;
+    mr_fast:=mr_fast.getlinkedDropDownMemrec;
+    if mr_slow=mr_fast then exit(true);
+  end;
 end;
 
 function TMemoryRecord.getlinkedDropDownMemrec: TMemoryRecord;
 begin
-  if linkedDropDownMemrec=nil then
+  if (linkedDropDownMemrec=nil) or (MemRecsDestroyedCounter <> SnapshotOfMemRecsDestroyedCounter) then
   begin
     linkedDropDownMemrec:=TAddresslist(fOwner).getRecordWithDescription(fDropDownLinkedMemrec);
-    if linkedDropDownMemrec<>nil then
-    begin
-      OldlinkedDropDownMemrecOnDestroy:=linkedDropDownMemrec.OnDestroy;
-      linkedDropDownMemrec.OnDestroy:=OnLinkedMemrecDestroy;
-    end;
+    if (linkedDropDownMemrec<>nil) and
+       (linkedDropDownMemrec.getlinkedDropDownMemrec_LoopDetected=false) then
+      SnapshotOfMemRecsDestroyedCounter:=MemRecsDestroyedCounter
+    else
+      linkedDropDownMemrec:=nil;
   end;
 
   result:=linkedDropDownMemrec;
@@ -3157,6 +3175,9 @@ begin
   else
     result:=mrhToggleActivation;
 end;
+
+initialization
+  MemRecsDestroyedCounter:=0;
 
 end.
 
