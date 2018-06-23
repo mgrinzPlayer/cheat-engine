@@ -736,7 +736,6 @@ var
 
   GetLogicalProcessorInformation: function(Buffer: PSYSTEM_LOGICAL_PROCESSOR_INFORMATION; ReturnedLength: PDWORD): BOOL; stdcall;
   PrintWindow                 : function (hwnd: HWND; hdcBlt: HDC; nFlags: UINT): BOOL; stdcall;
-  ChangeWindowMessageFilter   : function (msg: Cardinal; Action: Dword): BOOL; stdcall;
 
   VirtualQueryEx_StartCache: TVirtualQueryEx_StartCache;
   VirtualQueryEx_EndCache: TVirtualQueryEx_EndCache;
@@ -1816,7 +1815,6 @@ initialization
 
   u32:=loadlibrary('user32.dll');
   PrintWindow:=GetProcAddress(u32,'PrintWindow');
-  ChangeWindowMessageFilter:=GetProcAddress(u32,'ChangeWindowMessageFilter');
 
   {$ifdef windows}
   GetRegionInfo:=GetRegionInfo_Windows;

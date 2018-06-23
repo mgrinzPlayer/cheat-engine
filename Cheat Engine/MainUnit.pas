@@ -5086,14 +5086,6 @@ begin
   Set8087CW($133f);
   SetSSECSR($1f80);
 
-  //FormDropFiles fix for win7, win8 and later (window message filter update)
-  if (WindowsVersion>=wv7) and assigned(ChangeWindowMessageFilter) then
-  try
-   //WM_COPYGLOBALDATA = 73; MSGFLT_ADD = 1
-   ChangeWindowMessageFilter(73, 1);
-   ChangeWindowMessageFilter(WM_DROPFILES, 1);
-  except;
-  end;
 
   LuaFiles := TLuaFileList.Create;
   LuaForms := TList.Create;
