@@ -460,6 +460,11 @@ object formAddressChange: TformAddressChange
       ImageIndex = 1
       OnClick = miPasteClick
     end
+    object miFrequentlyUpdatedByUser: TMenuItem
+      AutoCheck = True
+      Caption = 'This offset is frequently updated. (expect this option to eat more CPU)'
+      OnClick = miFrequentlyUpdatedByUserClick
+    end
     object miUpdateOnReinterpretOnly: TMenuItem
       AutoCheck = True
       Caption = 'Only update the offset when the memory record gets reinterpreted'

@@ -95,6 +95,7 @@ type
     hasValue: boolean;
 
 
+    fFrequentlyUpdatedByUser: boolean;
     fOnlyUpdateAfterInterval: boolean;
     fOnlyUpdateWithReinterpret: boolean;
     fUpdateInterval: dword;
@@ -119,6 +120,7 @@ type
     property unparsed: boolean read funparsed;
     property invalid: boolean read fInvalid;
 
+    property FrequentlyUpdatedByUser: boolean read fFrequentlyUpdatedByUser write fFrequentlyUpdatedByUser;
     property OnlyUpdateWithReinterpret: boolean read fOnlyUpdateWithReinterpret write fOnlyUpdateWithReinterpret;
     property OnlyUpdateAfterInterval: boolean read fOnlyUpdateAfterInterval write fOnlyUpdateAfterInterval;
     property UpdateInterval: DWORD read fUpdateInterval write fUpdateInterval;
@@ -514,7 +516,7 @@ var
   stack: integer;
 begin
   lastOffsetBase:=currentbase;
-  if special then
+  if special or FrequentlyUpdatedByUser then
   begin
     if (not forced) then
     begin
@@ -1467,6 +1469,9 @@ begin
           if (a<>nil) and (a.TextContent='1') then
             fpointeroffsets[j].OnlyUpdateWithReinterpret:=true;
 
+          a:=tempnode2.Attributes.GetNamedItem('FrequentlyUpdated');
+          if (a<>nil) and (a.TextContent='1') then
+            fpointeroffsets[j].FrequentlyUpdatedByUser:=true;
 
           inc(j);
         end;
@@ -1875,6 +1880,12 @@ begin
             offset.Attributes.SetNamedItem(a);
           end;
 
+          if fpointeroffsets[i].FrequentlyUpdatedByUser then
+          begin
+            a:=doc.CreateAttribute('FrequentlyUpdated');
+            a.TextContent:='1';
+            offset.Attributes.SetNamedItem(a);
+          end;
 
         end;
 

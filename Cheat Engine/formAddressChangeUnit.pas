@@ -40,6 +40,7 @@ type
     repeattimer: TTimer;
     repeatdirection: integer;
     stepsize: integer;
+    fFrequentlyUpdatedByUser: boolean;
     fReinterpretUpdateOnly: boolean;
     fOnlyUpdateAfterInterval: boolean;
     fUpdateInterval: integer;
@@ -70,6 +71,7 @@ type
     property baseAddress: ptruint read fBaseAddress write setBaseAddress;
     property special: boolean read fspecial;
 
+    property FrequentlyUpdatedByUser: boolean read fFrequentlyUpdatedByUser write fFrequentlyUpdatedByUser;
     property OnlyUpdateWithReinterpret: boolean read fReinterpretUpdateOnly write fReinterpretUpdateOnly;
     property OnlyUpdateAfterInterval: boolean read fOnlyUpdateAfterInterval write fOnlyUpdateAfterInterval;
     property UpdateInterval: integer read fUpdateInterval write fUpdateInterval;
@@ -128,6 +130,7 @@ type
     miCopy: TMenuItem;
     miPaste: TMenuItem;
     miAddAddressToList: TMenuItem;
+    miFrequentlyUpdatedByUser: TMenuItem;
     miUpdateOnReinterpretOnly: TMenuItem;
     miUpdateAfterInterval: TMenuItem;
     pmPointerRow: TPopupMenu;
@@ -184,6 +187,7 @@ type
     procedure miPasteClick(Sender: TObject);
     procedure miUpdateAfterIntervalClick(Sender: TObject);
     procedure miUpdateOnReinterpretOnlyClick(Sender: TObject);
+    procedure miFrequentlyUpdatedByUserClick(Sender: TObject);
     procedure pcExtraChange(Sender: TObject);
     procedure pmOffsetPopup(Sender: TObject);
     procedure tsStartbitContextPopup(Sender: TObject; MousePos: TPoint;
@@ -1029,6 +1033,7 @@ begin
       pointerinfo.offset[i].UpdateInterval:=offsets[i].UpdateInterval;
       pointerinfo.offset[i].OnlyUpdateAfterInterval:=offsets[i].OnlyUpdateAfterInterval;
       pointerinfo.offset[i].OnlyUpdateWithReinterpret:=offsets[i].OnlyUpdateWithReinterpret;
+      pointerinfo.offset[i].FrequentlyUpdatedByUser:=offsets[i].FrequentlyUpdatedByUser;
     end;
 
     pointerinfo.processAddress;
@@ -1421,6 +1426,7 @@ begin
       memoryrecord.offsets[i].UpdateInterval:=pointerinfo.offset[i].UpdateInterval;
       memoryrecord.offsets[i].OnlyUpdateAfterInterval:=pointerinfo.offset[i].OnlyUpdateAfterInterval;
       memoryrecord.offsets[i].OnlyUpdateWithReinterpret:=pointerinfo.offset[i].OnlyUpdateWithReinterpret;
+      memoryrecord.offsets[i].FrequentlyUpdatedByUser:=pointerinfo.offset[i].FrequentlyUpdatedByUser;
     end;
   end
   else
@@ -1633,6 +1639,17 @@ begin
   end;
 end;
 
+procedure TformAddressChange.miFrequentlyUpdatedByUserClick(Sender: TObject);
+var oi: TOffsetInfo;
+begin
+
+  if pmOffset.PopupComponent is TEdit then
+  begin
+    oi:=TOffsetInfo(tedit(pmOffset.PopupComponent).tag);
+    oi.FrequentlyUpdatedByUser:=miFrequentlyUpdatedByUser.Checked;
+  end;
+end;
+
 procedure TformAddressChange.pcExtraChange(Sender: TObject);
 begin
 
@@ -1646,9 +1663,11 @@ begin
   begin
     oi:=TOffsetInfo(tedit(pmOffset.PopupComponent).tag);
 
+    miFrequentlyUpdatedByUser.visible:=oi.special;
     miUpdateOnReinterpretOnly.visible:=oi.special;
     miUpdateAfterInterval.visible:=oi.special;
 
+    miFrequentlyUpdatedByUser.Checked:=oi.fFrequentlyUpdatedByUser;
     miUpdateOnReinterpretOnly.Checked:=oi.fReinterpretUpdateOnly;
     miUpdateAfterInterval.Checked:=oi.fOnlyUpdateAfterInterval;
 
