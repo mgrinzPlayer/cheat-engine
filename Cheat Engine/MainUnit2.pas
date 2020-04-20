@@ -99,7 +99,7 @@ implementation
 
 
 uses KernelDebugger,mainunit, DebugHelper, CustomTypeHandler, ProcessList, Globals,
-     frmEditHistoryUnit, DBK32functions, frameHotkeyConfigUnit, UnexpectedExceptionsHelper;
+     frmEditHistoryUnit, DBK32functions, frameHotkeyConfigUnit, UnexpectedExceptionsHelper, backupper;
 
 procedure UpdateToolsMenu;
 var i: integer;
@@ -967,6 +967,44 @@ begin
             cbUseThreadForFreeze.checked:=reg.ReadBool('use thread to freeze');
             mainform.UseThreadToFreeze:=cbUseThreadForFreeze.checked;
           end;
+
+          if reg.ValueExists('backupper use subdirectory') then
+          begin
+            cbBackupperUseSubdirectory.checked:=reg.ReadBool('backupper use subdirectory');
+            BackupperUseSubdirectory:=cbBackupperUseSubdirectory.checked;
+          end
+          else
+          begin
+            cbBackupperUseSubdirectory.checked:=true;
+            BackupperUseSubdirectory:=true;
+          end;
+
+          if reg.ValueExists('backupper backup on save') then
+          begin
+            cbBackupperBackupOnSave.checked:=reg.ReadBool('backupper backup on save');
+            BackupperBackupOnSave:=cbBackupperBackupOnSave.checked;
+          end;
+
+          if reg.ValueExists('backupper backup file count') then
+            comboboxBackupperBackupFileCount.ItemIndex:=reg.ReadInteger('backupper backup file count');
+          BackupperBackupFileCount:=comboboxBackupperBackupFileCount.ItemIndex+1;
+
+          if reg.ValueExists('backupper session backup') then
+          begin
+            cbBackupperSessionBackup.checked:=reg.ReadBool('backupper session backup');
+            BackupperSessionBackup:=cbBackupperSessionBackup.checked;
+          end;
+
+          if reg.ValueExists('backupper file history') then
+          begin
+            cbBackupperFileHistory.checked:=reg.ReadBool('backupper file history');
+            BackupperFileHistory:=cbBackupperFileHistory.checked;
+          end;
+
+          if reg.ValueExists('backupper file history interval') then
+            edtBackupperFileHistoryInterval.Text:=inttostr(reg.ReadInteger('backupper file history interval'));
+          BackupperFileHistoryInterval:=strtoint(edtBackupperFileHistoryInterval.Text);
+
         end;
 
 

@@ -636,7 +636,7 @@
         <PackageName Value="LCL"/>
       </Item8>
     </RequiredPackages>
-    <Units Count="395">
+    <Units Count="396">
       <Unit0>
         <Filename Value="cheatengine.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -2720,6 +2720,11 @@
         <Filename Value="machotkeys.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit394>
+      <Unit395>
+        <Filename Value="backupper.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Backupper"/>
+      </Unit395>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -7745,6 +7745,7 @@ begin
       dontDeactivateDesignerForms:=true;
 
     savetable(filename, protect, dontDeactivateDesignerForms);
+    if not mainform.editedsincelastsave then mainform.frmLuaTableScript.assemblescreen.MarkTextAsSaved;
   end;
 
   lua_pop(L, lua_gettop(L));

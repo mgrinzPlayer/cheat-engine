@@ -82,6 +82,15 @@ type
     cbAllocsAddToWatchedRegions: TCheckBox;
     cbSkip_PAGE_WRITECOMBINE: TCheckBox;
     cbUseThreadForFreeze: TCheckBox;
+    cbBackupperUseSubdirectory: TCheckBox;
+    cbBackupperBackupOnSave: TCheckBox;
+    comboboxBackupperBackupFileCount: TComboBox;
+    cbBackupperSessionBackup: TCheckBox;
+    cbBackupperFileHistory: TCheckBox;
+    edtBackupperFileHistoryInterval: TEdit;
+    lblBackupper1: TLabel;
+    lblBackupper2: TLabel;
+    lblBackupper3: TLabel;
     combothreadpriority: TComboBox;
     defaultbuffer: TPopupMenu;
     Default1: TMenuItem;
@@ -163,6 +172,7 @@ type
     spbDown: TSpeedButton;
     spbUp: TSpeedButton;
     Languages: TTabSheet;
+    tsBackupper: TTabSheet;
     tsMacDebuggerInterface: TTabSheet;
     tsLua: TTabSheet;
     tsSigning: TTabSheet;
@@ -350,7 +360,7 @@ uses
   aboutunit, MainUnit, MainUnit2, frmExcludeHideUnit, ModuleSafetyUnit,
   frmProcessWatcherUnit, CustomTypeHandler, processlist, commonTypeDefs,
   frmEditHistoryUnit, Globals, fontSaveLoadRegistry, CETranslator,
-  MemoryBrowserFormUnit, DBK32functions, feces, UnexpectedExceptionsHelper;
+  MemoryBrowserFormUnit, DBK32functions, feces, UnexpectedExceptionsHelper, backupper;
 
 
 type TLanguageEntry=class
@@ -413,6 +423,7 @@ resourcestring
   rsLuaOptions = 'Lua';
   rsExtra = 'Extra';
   rsSigning = 'Signing';
+  rsBackupper = 'Backupper';
   rsNoName = 'No Name';
   rsAttachToForegroundProcess = 'Attach to current foreground process';
   rsPopupHideCheatEngine = 'Popup/Hide cheat engine';
@@ -924,6 +935,23 @@ begin
 
         mainform.FreezeTimer.Interval:=freezeinterval;
         mainForm.UseThreadToFreeze:=cbUseThreadForFreeze.checked;
+
+        val(edtBackupperFileHistoryInterval.Text,i,error);
+        if (error<>0) or (i<=0) then raise exception.Create(Format(rsIsNotAValidInterval, [edtBackupperFileHistoryInterval.Text]));
+
+        reg.WriteBool('backupper use subdirectory', cbBackupperUseSubdirectory.checked);
+        reg.WriteBool('backupper backup on save', cbBackupperBackupOnSave.checked);
+        reg.WriteInteger('backupper backup file count', comboboxBackupperBackupFileCount.ItemIndex);
+        reg.WriteBool('backupper session backup', cbBackupperSessionBackup.checked);
+        reg.WriteBool('backupper file history', cbBackupperFileHistory.checked);
+        reg.WriteInteger('backupper file history interval', i);
+
+        BackupperUseSubdirectory:=cbBackupperUseSubdirectory.checked;
+        BackupperBackupOnSave:=cbBackupperBackupOnSave.checked;
+        BackupperBackupFileCount:=comboboxBackupperBackupFileCount.ItemIndex+1;
+        BackupperSessionBackup:=cbBackupperSessionBackup.checked;
+        BackupperFileHistory:=cbBackupperFileHistory.checked;
+        BackupperFileHistoryInterval:=i;
 
         if cbOverrideDefaultFont.checked then
         begin
@@ -1700,6 +1728,7 @@ begin
 
   tvMenuSelection.Items[6].Visible:=false;
   tvMenuSelection.Items[10].Visible:={$ifdef windows}cansigntables{$else}false{$endif};
+  tvMenuSelection.Items[11].Data:=tsBackupper;
 
   pcSetting.ShowTabs:=false;
 
@@ -1785,6 +1814,7 @@ begin
   tvMenuSelection.Items[8].Text:=rsLuaOptions;
   tvMenuSelection.Items[9].Text:=rsExtra;
   tvMenuSelection.Items[10].Text:=rsSigning;
+  tvMenuSelection.Items[11].Text:=rsBackupper;
 
 
 

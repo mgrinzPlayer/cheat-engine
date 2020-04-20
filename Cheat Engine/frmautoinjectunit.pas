@@ -256,7 +256,7 @@ uses frmAAEditPrefsUnit,MainUnit,memorybrowserformunit,APIhooktemplatesettingsfr
   Globals, Parsers, MemoryQuery, {$ifdef windows}GnuAssembler,{$endif} LuaCaller, SynEditTypes, CEFuncProc,
   StrUtils, types, ComCtrls, LResources, NewKernelHandler, MainUnit2, Assemblerunit,
   autoassembler,  registry, luahandler, memscan, foundlisthelper, ProcessHandlerUnit,
-  frmLuaEngineUnit, frmSyntaxHighlighterEditor;
+  frmLuaEngineUnit, frmSyntaxHighlighterEditor, backupper;
 
 resourcestring
   rsExecuteScript = 'Execute script';
@@ -493,6 +493,9 @@ var
     registeredsymbols: TStringlist;
     errmsg: string;
 begin
+  // do session backup without delay (regardless of the content of the editedsincelastsave variable)
+  if (scriptmode=smLua) and (BackupperSessionBackup or BackupperFileHistory) then SessionBackupFileCreate;
+
 {$ifndef standalonetrainerwithassembler}
   registeredsymbols:=tstringlist.Create;
   registeredsymbols.CaseSensitive:=false;

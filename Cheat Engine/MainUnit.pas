@@ -943,7 +943,7 @@ type
 
 
 
-    editedsincelastsave: boolean;
+    fEditedSinceLastSave: boolean;
 
     autoattachlist: TStringList;
     extraautoattachlist: TStringList;
@@ -1018,6 +1018,8 @@ type
 
     procedure DBVMFindWhatWritesOrAccesses(address: ptruint);
 
+    procedure SessionBackupFileCreate_Delayed(sender: TObject);
+    procedure setEditedSinceLastSave(state: boolean);
 
     property foundcount: int64 read ffoundcount write setfoundcount;
     property RoundingType: TRoundingType read GetRoundingType write SetRoundingType;
@@ -1034,6 +1036,7 @@ type
     property Help1: TMenuItem read miHelp write miHelp;
     property OnProcessOpened: TProcessOpenedEvent read fOnProcessOpened write fOnProcessOpened;
     property UseThreadToFreeze: boolean read getUseThreadToFreeze write setUseThreadToFreeze;
+    property editedsincelastsave: boolean read fEditedSinceLastSave write setEditedSinceLastSave;
   end;
 
 var
@@ -1060,7 +1063,7 @@ uses cefuncproc, MainUnit2, ProcessWindowUnit, MemoryBrowserFormUnit, TypePopup,
   PointerscanresultReader, Parsers, Globals {$ifdef windows},GnuAssembler, xinput{$endif} ,DPIHelper,
   multilineinputqueryunit {$ifdef windows},winsapi{$endif} ,LuaClass, Filehandler{$ifdef windows}, feces{$endif}
   {$ifdef windows},frmDBVMWatchConfigUnit, frmDotNetObjectListUnit{$endif} ,ceregistry ,UnexpectedExceptionsHelper
-  ,frmFoundlistPreferencesUnit, fontSaveLoadRegistry{$ifdef windows}, cheatecoins{$endif},strutils;
+  ,frmFoundlistPreferencesUnit, fontSaveLoadRegistry{$ifdef windows}, cheatecoins{$endif},strutils,backupper;
 
 resourcestring
   rsInvalidStartAddress = 'Invalid start address: %s';
@@ -2359,6 +2362,29 @@ end;
 
 
 
+procedure TMainForm.SessionBackupFileCreate_Delayed(sender: TObject);
+begin
+  SessionBackupFileCreate;
+end;
+
+procedure TMainForm.setEditedSinceLastSave(state: boolean);
+begin
+  fEditedSinceLastSave := state;
+  if (BackupperSessionBackup or BackupperFileHistory) and state then
+  begin
+    if BackupperDelayTimer=nil then
+    begin
+      BackupperDelayTimer := TTimer.Create(self);
+      BackupperDelayTimer.Name := 'BackupperTimer';
+      BackupperDelayTimer.Interval := 5000;
+      BackupperDelayTimer.Enabled := false;
+      BackupperDelayTimer.OnTimer := SessionBackupFileCreate_Delayed;
+    end;
+    BackupperDelayTimer.Enabled:=false;
+    BackupperDelayTimer.Enabled:=true;
+  end;
+end;
+
 function TMainForm.CheckIfSaved: boolean;
 var
   help: word;
@@ -3115,7 +3141,11 @@ begin
   if (savedialog1.FileName = '') then
     actSave.Execute
   else
+  begin
+    if BackupperBackupOnSave then createBackupFile(savedialog1.FileName, false);
     savetable(savedialog1.FileName);
+    if not editedsincelastsave then frmLuaTableScript.assemblescreen.MarkTextAsSaved;
+  end;
 end;
 
 procedure TMainForm.Description1Click(Sender: TObject);
@@ -3146,15 +3176,18 @@ begin
 
     if CheckIfSaved then
     begin
-
-      app := messagedlg(rsDoYouWishToMergeTheCurrentTableWithThisTable,
-        mtConfirmation, mbYesNoCancel, 0);
-      case app of
-        mrCancel: exit;
-        mrYes: merge := True;
-        mrNo: merge := False;
+      if ((addresslist.Count > 0) or (advancedoptions.count > 0) or (DissectedStructs.count>0) )then
+      begin
+        app := messagedlg(rsDoYouWishToMergeTheCurrentTableWithThisTable,
+          mtConfirmation, mbYesNoCancel, 0);
+        case app of
+          mrCancel: exit;
+          mrYes: merge := True;
+          mrNo: merge := False;
+        end;
       end;
 
+      if BackupperSessionBackup then SessionBackupFileRemove(Savedialog1.FileName);
       LoadTable(filenames[0], merge);
       reinterpretaddresses;
 
@@ -3664,7 +3697,11 @@ end;
 procedure TMainForm.miSaveClick(Sender: TObject);
 begin
   if fileexists(savedialog1.FileName) then
-    savetable(savedialog1.FileName, false)
+  begin
+    if BackupperBackupOnSave then createBackupFile(savedialog1.FileName, false);
+    savetable(savedialog1.FileName, false);
+    if not editedsincelastsave then frmLuaTableScript.assemblescreen.MarkTextAsSaved;
+  end
   else
     actSave.Execute;
 end;
@@ -8682,6 +8719,7 @@ begin
     end;
 
     try
+      if BackupperSessionBackup then SessionBackupFileRemove(SaveDialog1.filename);
       LoadTable(Opendialog1.filename, merge);
       SaveDialog1.filename:=Opendialog1.filename;
 
@@ -8722,7 +8760,13 @@ begin
       protect := MessageDlg(rsDoYouWantToProtectThisTrainerFileFromEditing,
         mtConfirmation, [mbYes, mbNo], 0) = mrYes;
 
+    if BackupperBackupOnSave then createBackupFile(savedialog1.FileName, false);
+
+    if BackupperSessionBackup and (oldFileName<>savedialog1.FileName) then
+      SessionBackupFileRemove(oldFileName); // remove old session backup in case user saves with different file name
+
     savetable(savedialog1.FileName, protect);
+    if not mainform.editedsincelastsave then mainform.frmLuaTableScript.assemblescreen.MarkTextAsSaved;
 
     saveGotCanceled:=false;
     opendialog1.FileName := savedialog1.filename;
@@ -10117,7 +10161,7 @@ begin
     end;
     FreeAndNil(scantablist);
   end;
-
+  if BackupperSessionBackup then SessionBackupFileRemove(Savedialog1.FileName);
 end;
 
 procedure TMainForm.tbSpeedChange(Sender: TObject);

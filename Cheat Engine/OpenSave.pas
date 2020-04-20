@@ -196,7 +196,7 @@ implementation
 
 uses MainUnit, mainunit2, symbolhandler, symbolhandlerstructs, LuaHandler,
      formsettingsunit {$ifdef windows},frmExeTrainerGeneratorUnit, trainergenerator{$endif},
-     ProcessHandlerUnit, parsers{$ifdef windows},feces{$endif} ,asktorunluascript;
+     ProcessHandlerUnit, parsers{$ifdef windows},feces{$endif} ,asktorunluascript, backupper;
 
 
 
@@ -1087,6 +1087,7 @@ var
     Extension: String;
     doc: TXMLDocument;
     workdir: string;
+    backuppath: string;
 begin
   if mainform.addresslist=nil then exit;
 
@@ -1111,7 +1112,19 @@ begin
   if Extension='.CT2' then LoadCT2(filename,merge) else
   if Extension='.CT3' then LoadCT3(filename,merge) else}
   if Extension='.CETRAINER' then LoadCT(filename, false) else
-  if Extension='.CT' then LoadCT(filename,merge) else
+  if Extension='.CT' then
+  begin
+    if BackupperSessionBackup and SessionBackupFileExists(filename, backuppath) then
+    begin
+      LoadTable(backuppath, merge);
+      SaveTable(filename); // immediately save it
+      exit;
+    end
+    else
+      LoadCT(filename,merge);
+  end
+  else
+  if Extension='.~CT' then LoadCT(filename, merge) else // session backup file
   if Extension='.XML' then
   begin
     try
@@ -1315,7 +1328,6 @@ begin
   begin
     luascript:=CheatTable.AppendChild(doc.CreateElement('LuaScript'));
     luascript.TextContent:=Utf8ToAnsi(mainform.frmLuaTableScript.assemblescreen.text);
-    mainform.frmLuaTableScript.assemblescreen.MarkTextAsSaved;
   end;
 
   //disassemblercomments

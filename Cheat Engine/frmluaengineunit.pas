@@ -147,7 +147,7 @@ implementation
 { TfrmLuaEngine }
 
 uses LuaClass, SynEditTypes, globals, DPIHelper, frmSyntaxHighlighterEditor,
-  frmautoinjectunit;
+  frmautoinjectunit, backupper;
 
 resourcestring
   rsError = 'Script Error';
@@ -1120,6 +1120,9 @@ var pc: pchar;
   templist: tstringlist;
   pad: string;
 begin
+  // do session backup without delay (regardless of the content of the editedsincelastsave variable)
+  if BackupperSessionBackup or BackupperFileHistory then SessionBackupFileCreate;
+
   i:=lua_gettop(Luavm);
   if i>0 then
     OutputDebugString('luastack is not correct');
